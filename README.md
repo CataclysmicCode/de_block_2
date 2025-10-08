@@ -1,2 +1,3 @@
-# collab_audio
-A library of base64 sounds for a game I’m working on
+# De Block 2
+
+A web based game that works in the browser based on de blob 2 but remade in a 2D pixelated style.
