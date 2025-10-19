@@ -4,6 +4,8 @@ A Collab with Cataclysmic Code, the amazing most stupendous (no gramer) programm
 
 A web based game that works on Khan Academy based on de blob 2 for PS3 but remade in a 2D pixelated style, with completely reworked ideas.
 
+I am starting to realize how much of a pain it is to work with KA's strict policy of "No external images" When i want to import custom sprites or parallax scrolling backgrounds. Everything has to be converted to base64 before being ported over.
+
 To Do:
 - Missions & NPC's
 - Level conditional actions
