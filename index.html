@@ -213,14 +213,16 @@
     <!--Audio-->
     <script type>
 
-        //load all audio
-        let names = "cute1 cute2 cute3 cute4 cute5 happy1 happy2 splash1 splash2 underwater wilhelm dark1 dark2 dark3 dark4 egg1 egg2 bossfight cataclysmic_intro cave1 crumble1 crumble2 evil_talking garble landing hard_landing master_intro pitbull powerup talking1 dial_up".split(" ");
-        
-        let totalAudio = names.length, loadedAudio = 0;
+        // Volume for various catagories
         let masterSongVolume = 1, masterSoundVolume = 1, masterVolume = 1;
+
+        // Load all audio
+        let audioNames = "cute1 cute2 cute3 cute4 cute5 happy1 happy2 splash1 splash2 underwater wilhelm dark1 dark2 dark3 dark4 egg1 egg2 bossfight cataclysmic_intro cave1 crumble1 crumble2 evil_talking garble landing hard_landing master_intro pitbull powerup talking1 dial_up".split(" ");
+        
+        let totalAudio = audioNames.length, loadedAudio = 0;
         for(let i = 0; i < totalAudio; i++){
             let dScript = document.createElement('script');
-            dScript.src = 'https://cdn.jsdelivr.net/gh/CataclysmicCode/de_block_2/Audio/'+names[i]+'.min.js';
+            dScript.src = 'https://cdn.jsdelivr.net/gh/CataclysmicCode/de_block_2/Audio/'+audioNames[i]+'.min.js';
             document.body.appendChild(dScript);
         }
 
@@ -553,6 +555,42 @@
             };
         }*/
     
+    </script>
+
+    <!--Backgrounds-->
+    <script type>
+
+        let backgrounds = {
+            farm: [5, 6, 6, 6],
+            food: [3, ],
+            forest: [
+                [],
+                [],
+                [],
+                [],
+                [],
+                [],
+                [],
+                [],
+            ],
+            industrial: [
+                [],
+                [],
+                [],
+                [],
+                [],
+                [],
+                [],
+                [],
+            ],
+        }
+        for(let b in backgrounds){
+            let back = backgrounds[b];
+            // let dScript = document.createElement('script');
+            // dScript.src = 'https://cdn.jsdelivr.net/gh/CataclysmicCode/de_block_2/Audio/'+audioNames[i]+'.min.js';
+            // document.body.appendChild(dScript);
+        }
+
     </script>
 
     <!--Loader-->
@@ -3936,7 +3974,7 @@ const pages = new Pages({
                     color(255),
                     ((player.hasColored/player.mustColor)||0)
                 ));*/
-                image(img22, width/2, height/2, 200, 200);
+                
 /*
                 // Update world
                 pushMatrix();
@@ -4100,8 +4138,6 @@ const pages = new Pages({
         })
     }
 });
-
-var img22 = loadImage("/Users/josephliam/Downloads/Resources/Industrial Backgrounds/1/10.png");
 
 createLevel();
 (!instantLoad) ? pages.showPage("loadImages") : pages.showPage("loadAudio");
