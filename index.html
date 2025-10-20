@@ -220,7 +220,7 @@
         let masterSongVolume = 1, masterSoundVolume = 1, masterVolume = 1;
         for(let i = 0; i < totalAudio; i++){
             let dScript = document.createElement('script');
-            dScript.src = 'https://cdn.jsdelivr.net/gh/CataclysmicCode/de_block_2/audio/'+names[i]+'.min.js';
+            dScript.src = 'https://cdn.jsdelivr.net/gh/CataclysmicCode/de_block_2/Audio/'+names[i]+'.min.js';
             document.body.appendChild(dScript);
         }
 
@@ -735,6 +735,14 @@ const mouse = {
 /** Art **/
 // [
 
+function createProcessingImage(base64String) {
+    const dataUrl = 'data:image/png;base64,' + base64String;
+
+    loadImage(dataUrl, (img) => {
+        image(img, 0, 0);
+    });
+}
+
 const colors = {
     // white black and all shades of gray
     "-": color(-1, 0),
@@ -816,7 +824,6 @@ for(let a = 0; a < colorSub.length; a++){
     art[name+"PoolTop"] = colorArt;
 
 }
-
 
 if(instantLoad){
 
