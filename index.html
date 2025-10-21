@@ -567,31 +567,35 @@
         let backgrounds = {
             Farm: [5, 6, 6, 6],
             Food: [3, 3, 4, 4, 4, 4, 5, 5],
-            Forest: [5, 3, 8, 7, 7, 5, 5, 5],
-            Industrial: [6, 7, 6, 8, 6, 7, 6, 6],
+            Forest: [4, 2, 7, 6, 6, 4, 4, 4],
+            Industrial: [5, 6, 5, 6, 5, 6, 5, 5],
         }
         for(let b in backgrounds){
             let back = backgrounds[b];
             for (let i = 0; i < back.length; i++) {
                 for (let j = 0; j < back[i]; j++) {
                     let dScript = document.createElement('script');
-                    dScript.src = "https://cdn.jsdelivr.net/gh/CataclysmicCode/de_block_2/Images/" + b + "/" + (i + 1) + "/" + (j + 1) + ".js";
+                    dScript.src = "Images/" + b + "/" + (i + 1) + "/" + (j + 1) + ".js";
                     document.body.appendChild(dScript);
                 }
             }
         }
 
         function parseImages() {
-            /*
             for(let b in backgrounds){
                 let back = backgrounds[b];
                 for (let i = 0; i < back.length; i++) {
-                    for (let j = 0; j < back[i]; j++) {
-                        console.log(b + "_" + (i + 1) + "_" + (j + 1));
+                    let num = back[i];
+                    back[i] = [];
+                    for (let j = 0; j < num; j++) {
+                        base64String = window[b + "_" + (i + 1) + "_" + (j + 1)];
+                        imageSrc = "data:image/png;base64," + base64String;
+                        img = document.createElement('img');
+                        img.src = imageSrc;
+                        back[i].push(img);
                     }
                 }
-            }*/
-           console.log(window["Farm_1_1"])
+            }
         }
 
     </script>
@@ -652,7 +656,8 @@ let entities = [],
     player,
     keys = {},
     levelW = 0,
-    levelH = 0;
+    levelH = 0,
+    ctx = canvas.getContext("2d");
 
 // Constants
 const blockW = 40,
@@ -1494,8 +1499,8 @@ class Light {
         beginShape();
             // Subtle animation
             this.visibleRays.forEach((v, i) => {
-                this.visibleRays[i].x += (this.rays[i].x - this.visibleRays[i].x) / 4;
-                this.visibleRays[i].y += (this.rays[i].y - this.visibleRays[i].y) / 4;
+                this.visibleRays[i].x += (this.rays[i].x - this.visibleRays[i].x) / 2;
+                this.visibleRays[i].y += (this.rays[i].y - this.visibleRays[i].y) / 2;
                 vertex(v.x - PADDING_X, v.y - PADDING_Y);
             });
         endShape();
@@ -3972,13 +3977,21 @@ const pages = new Pages({
             dust: new ParticleSystem(),
             particles: new ParticleSystem(),
             draw: function() {
-                /*background(lerpColor(
+                /*
+                background(lerpColor(
                     color(200),
                     color(255),
                     ((player.hasColored/player.mustColor)||0)
-                ));*/
+                ));
+                */
                 
-/*
+                let bigPapa = backgrounds.Forest[1];
+                for (let i = 0; i < bigPapa.length; i++) {
+                    let img = bigPapa[i], h = 600, w = (img.width / img.height) * 600;
+                    ctx.drawImage(img, ((((-cam.x - 1200) / 20) * (i + 1)) % (w * 2 - 2)) + w, 0, w, h);
+                    ctx.drawImage(img, ((((-cam.x - 1200) / 20) * (i + 1) - w + 1) % (w * 2 - 2)) + w, 0, w, h);
+                }
+
                 // Update world
                 pushMatrix();
 
@@ -4049,7 +4062,7 @@ const pages = new Pages({
 
                 // Fix this, it is returning the error: TypeError: undefined is not an object (evaluating 'blcks[v0]][v[1]].strength')
                 if (player.dead) createLevel();
-*/
+                
             }
         }),
         home: new Page({
