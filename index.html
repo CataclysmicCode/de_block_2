@@ -213,6 +213,9 @@
     <!--Audio-->
     <script type>
 
+        // Kick the program off with a pointless log
+        console.log("---Loading data---");
+
         // Volume for various catagories
         let masterSongVolume = 1, masterSoundVolume = 1, masterVolume = 1;
 
@@ -557,9 +560,10 @@
     
     </script>
 
-    <!--Backgrounds-->
+    <!--Images-->
     <script type>
 
+        // Not all images are loaded here, like the ones that were made as bitmaps. Just the assets that were loaded externally.
         let backgrounds = {
             Farm: [5, 6, 6, 6],
             Food: [3, 3, 4, 4, 4, 4, 5, 5],
@@ -571,12 +575,23 @@
             for (let i = 0; i < back.length; i++) {
                 for (let j = 0; j < back[i]; j++) {
                     let dScript = document.createElement('script');
-                    dScript.src = "https://cdn.jsdelivr.net/gh/CataclysmicCode/de_block_2@main/Images/" + b + "/" + (i + 1) + "/" + (j + 1) + ".js";
+                    dScript.src = "https://cdn.jsdelivr.net/gh/CataclysmicCode/de_block_2/Images/" + b + "/" + (i + 1) + "/" + (j + 1) + ".js";
                     document.body.appendChild(dScript);
-
-                    console.log(b + "_" + (i + 1) + "_" + (j + 1));
                 }
             }
+        }
+
+        function parseImages() {
+            /*
+            for(let b in backgrounds){
+                let back = backgrounds[b];
+                for (let i = 0; i < back.length; i++) {
+                    for (let j = 0; j < back[i]; j++) {
+                        console.log(b + "_" + (i + 1) + "_" + (j + 1));
+                    }
+                }
+            }*/
+           console.log(window["Farm_1_1"])
         }
 
     </script>
@@ -4174,6 +4189,7 @@ keyReleased = () => {
 } function init() {
 
     parseAudio();
+    parseImages();
 
     let canvas = document.getElementById("game-canvas");
     let processingInstance = runPJS(program);
