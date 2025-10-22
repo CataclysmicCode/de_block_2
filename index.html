@@ -3977,13 +3977,6 @@ const pages = new Pages({
             dust: new ParticleSystem(),
             particles: new ParticleSystem(),
             draw: function() {
-                /*
-                background(lerpColor(
-                    color(200),
-                    color(255),
-                    ((player.hasColored/player.mustColor)||0)
-                ));
-                */
                 
                 let bigPapa = backgrounds.Forest[1];
                 for (let i = 0; i < bigPapa.length; i++) {
@@ -3991,6 +3984,13 @@ const pages = new Pages({
                     ctx.drawImage(img, ((((-cam.x - 1200) / 20) * (i + 1)) % (w * 2 - 2)) + w, 0, w, h);
                     ctx.drawImage(img, ((((-cam.x - 1200) / 20) * (i + 1) - w + 1) % (w * 2 - 2)) + w, 0, w, h);
                 }
+
+                fill(
+                    0,
+                    150-(((player.hasColored/player.mustColor)||0))*150
+                );
+                noStroke();
+                rect(0, 0, width, height);
 
                 // Update world
                 pushMatrix();
