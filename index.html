@@ -3617,41 +3617,49 @@ let blockData = {
         type: "blank",
         canChangeColor: 1,
         canCollide: 1,
+        colorAble: 1,
     },
     "c": {
         type: "red",
         canChangeColor: 1,
         canCollide: 1,
+        colorable: 1,
     },
     "z": {
         type: "green",
         canChangeColor: 1,
         canCollide: 1,
+        colorable: 1,
     },
     "h": {
         type: "blue",
         canChangeColor: 1,
         canCollide: 1,
+        colorable: 1,
     },
     "i": {
         type: "yellow",
         canChangeColor: 1,
         canCollide: 1,
+        colorable: 1,
     },
     "j": {
         type: "purple",
         canChangeColor: 1,
         canCollide: 1,
+        colorable: 1,
     },
     "k": {
         type: "orange",
         canChangeColor: 1,
         canCollide: 1,
+        colorable: 1,
     },
     "p": {
         type: "brown",
         canChangeColor: 1,
         canCollide: 1,
+        colorable: 1,
     },
 };
 let levels = [
@@ -3978,7 +3986,7 @@ const pages = new Pages({
             particles: new ParticleSystem(),
             draw: function() {
                 
-                let bigPapa = backgrounds.Forest[1];
+                let bigPapa = backgrounds.Industrial[1];
                 for (let i = 0; i < bigPapa.length; i++) {
                     let img = bigPapa[i], h = 600, w = (img.width / img.height) * 600;
                     ctx.drawImage(img, ((((-cam.x - 1200) / 20) * (i + 1)) % (w * 2 - 2)) + w, 0, w, h);
