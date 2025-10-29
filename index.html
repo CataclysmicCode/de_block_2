@@ -1137,6 +1137,117 @@ class Character {
 
 // ]
 
+/** Spirals **/
+// [
+
+function parseSpirals() {
+    
+    // Spiral fills for coloarable blocks
+    // Available colors are red, yellow, blue, green, purple, orange, and brown
+    var amount = 100, pending = [], c = 0, rendering = true;
+    var grid = Array.from({ length: amount }, function() { return Array(amount).fill(0); });
+    background(-1, 0);
+
+    // Predefs for the spiral color fills
+    var spiralColors = [
+        ["spiralRed", color(255, 0, 0)],
+        ["spiralBlue", color(0, 0, 255)],
+        ["spiralGreen", color(0, 255, 0)],
+        ["spiralYellow", color(255, 255, 0)],
+        ["spiralPurple", color(217, 0, 255)],
+        ["spiralOrange", color(255, 140, 0)],
+        ["spiralBrown", color(110, 81, 44)]
+    ], colorIndex = -1, finished = true;
+    function renderNext() {
+        colorIndex++;
+        c = 0;
+        grid = Array.from({ length: amount }, function() { return Array(amount).fill(0); });
+        background(0, 0);
+    }
+    function setPixel(x, y, a, a2) {
+        if (y < grid.length && y >= 0 && x < grid[y].length && x >= 0 && grid[y][x] !== 1) {
+            pending.push([y, x]);
+            return 1;
+        }
+        return 0;
+    }
+
+    renderNext();
+
+    let i = 0;
+    while (1) {
+        i++;
+        stroke(lerpColor(spiralColors[colorIndex][1], color(0), noise(i / 50)));
+
+        // Spread the Grid
+        finished = true;
+        grid.forEach(function(v2, y, a) {
+            v2.forEach(function(v, x, a2) {
+                if (v === 1) {
+                    //rect(x * (100 / a2.length), y * (100 / a.length), 100 / a2.length, 100 / a.length);
+                    point(x, y);
+
+                    var r = floor(random(0, 5));
+                    switch (r) {
+                        case 1:
+                            setPixel(x + 1, y, a, a2);
+                            break;
+                        case 2:
+                            setPixel(x, y + 1, a, a2);
+                            break;
+                        case 3:
+                            setPixel(x - 1, y, a, a2);
+                            break;
+                        case 4:
+                            setPixel(x, y - 1, a, a2);
+                            break;
+                    }
+                    
+                    if (
+                        ((!grid[y + 1]) || grid[y + 1][x] !== 0) &&
+                        ((!grid[y - 1]) || grid[y - 1][x] !== 0) &&
+                        ((!grid[y][x + 1]) || grid[y][x + 1] !== 0) &&
+                        ((!grid[y][x - 1]) || grid[y][x - 1] !== 0)
+                    ) {
+                        grid[y][x] = 2;
+                    }
+                }
+                if (!v) {
+                    finished = false;
+                }
+            });
+        });
+
+        rendering = pending.length || c < 75;
+        for (let i = pending.length - 1; i >= 0; i--) {
+            grid[pending[i][0]][pending[i][1]] = 1;
+            pending.splice(i, 1);
+        }
+
+        // Spiral animation
+        if (c < 75) {
+            var sz = map(c, 0, 100, 1, 400);
+            var x = cos(c * 10.1) * sz + 300;
+            var y = sin(c * 10.1) * sz + 300;
+            grid[floor(y / (600 / grid.length))][floor(x / (600 / grid[0].length))] = 1;
+            c ++;
+        }
+        
+        // Capture the image every couple frames
+        if (i % 5 === 0) art[spiralColors[colorIndex][0]].push(get(0, 0, 100, 100));
+
+        // Render the next spiral
+        if (finished) {
+            art[spiralColors[colorIndex][0]].push(get(0, 0, 100, 100));
+            renderNext();
+        }
+        if (colorIndex === spiralColors.length) break;
+    }
+
+}
+
+// ]
+
 /** Pixel text class **/
 // [
 
@@ -1304,7 +1415,9 @@ class Page {
         try {
             if(this.visible) this.draw();
         } catch(err) {
-            println(err);
+            println("Oops looks like something went wrong! Please try restarting the program. Check the console for more info.");
+            console.error(err);
+            noLoop();
         }
     }
 }
@@ -1972,6 +2085,39 @@ class Block {
         image(art, x, y, w+1, h+1);
     }
     draw() {
+
+        // Temporary! Fix!
+        if (!art[this.type]) {
+            this.display(art.blank, this.x, this.y, this.w, this.h);
+            let n = (cos(frameCount) / 2 + 0.5) * 100 + 50;
+            noStroke();
+            switch (this.type) {
+                case "red":
+                    fill(222.5, 0, 0, n);
+                    break;
+                case "green":
+                    fill(30, 200, 30, n);
+                    break;
+                case "blue":
+                    fill(40, 40, 220, n);
+                    break;
+                case "purple":
+                    fill(127.5, 0, 255, n);
+                    break;
+                case "orange":
+                    fill(255, 120, 0, n);
+                    break;
+                case "yellow":
+                    fill(220, 220, 30, n);
+                    break;
+                case "brown":
+                    fill(100, 50, 0, n);
+                    break;
+            }
+            rect(this.x, this.y, this.w + 1, this.h + 1);
+            return;
+        }
+
         if (art[this.type].length) {
             if (this.canInfiniteAnimate) {
                 let mapped = floor((abs(this.transition)/this.animateSpeed)%art[this.type].length);
@@ -3285,6 +3431,8 @@ const cataclysmicIntro = new CataclysmicIntro();
 /** Initiate **/
 // [
 
+// parseSpirals();
+
 /**
  * 
  * @param {string} type - 
@@ -3622,51 +3770,55 @@ let blockData = {
         canCollide: 1,
         colorable: 1,
         nextType: "a",
-        onChange: function() {
-            console.log(this);
-        }
     },
     "c": {
         type: "red",
         canChangeColor: 1,
         canCollide: 1,
         colorable: 1,
+        nextType: "c",
     },
     "z": {
         type: "green",
         canChangeColor: 1,
         canCollide: 1,
         colorable: 1,
+        nextType: "z",
     },
     "h": {
         type: "blue",
         canChangeColor: 1,
         canCollide: 1,
         colorable: 1,
+        nextType: "h",
     },
     "i": {
         type: "yellow",
         canChangeColor: 1,
         canCollide: 1,
         colorable: 1,
+        nextType: "i",
     },
     "j": {
         type: "purple",
         canChangeColor: 1,
         canCollide: 1,
         colorable: 1,
+        nextType: "j",
     },
     "k": {
         type: "orange",
         canChangeColor: 1,
         canCollide: 1,
         colorable: 1,
+        nextType: "k",
     },
     "p": {
         type: "brown",
         canChangeColor: 1,
         canCollide: 1,
         colorable: 1,
+        nextType: "p",
     },
 };
 let levels = [
@@ -3734,9 +3886,9 @@ let levels = [
         "-------------------------------------------------#----------------------------------------------",
         "-------------------------------------------------#----------------------------------------------",
         "-------------------------------------------------#----------------------------------------------",
-        "-------------------------------------------------#----------------------------------------------",
-        "-------------------------------------------------#----------------------------------------------",
-        "@--------aaaaaGGGGGGGGG-GGG----------------------#----------------------------------------------",
+        "-aczh--------------------------------------------#----------------------------------------------",
+        "-ijkp--------------------------------------------#----------------------------------------------",
+        "@--------GGGGGGGGGGGGGG-GGG----------------------#----------------------------------------------",
         "SSS444444SSSSSSSSSSSSSS-GGGGGG-------------------#----------------------------------------------",
         "SSS444444SSSSSSSSSSSSSS-SSSSGGGGGG-TMT-----------#---------------------------------############G",
         "SSS444444SSSSSSSSSSSSSS-SSSSSSSSSGGGGG-T---------#---------------------------------############G",
