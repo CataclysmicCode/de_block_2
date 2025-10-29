@@ -789,6 +789,24 @@ function createProcessingImage(base64String) {
     });
 }
 
+const Colors = {
+    "spiralRed": color(255, 0, 0),
+    "spiralBlue": color(0, 0, 255),
+    "spiralGreen": color(0, 255, 0),
+    "spiralYellow": color(255, 255, 0),
+    "spiralPurple": color(217, 0, 255),
+    "spiralOrange": color(255, 140, 0),
+    "spiralBrown": color(110, 81, 44)
+};
+const spiralColors = [
+    ["red", color(255, 0, 0)],
+    ["blue", color(0, 0, 255)],
+    ["green", color(0, 255, 0)],
+    ["yellow", color(255, 255, 0)],
+    ["purple", color(217, 0, 255)],
+    ["orange", color(255, 140, 0)],
+    ["brown", color(110, 81, 44)]
+];
 const colors = {
     // white black and all shades of gray
     "-": color(-1, 0),
@@ -930,6 +948,7 @@ if(instantLoad){
             }
         }
     }
+    parseSpirals();
     console.log('---Images loaded---');
 
 }
@@ -1144,20 +1163,12 @@ function parseSpirals() {
     
     // Spiral fills for coloarable blocks
     // Available colors are red, yellow, blue, green, purple, orange, and brown
-    var amount = 100, pending = [], c = 0, rendering = true;
-    var grid = Array.from({ length: amount }, function() { return Array(amount).fill(0); });
+    let amount = 100, pending = [], c = 0, rendering = true;
+    let grid = Array.from({ length: amount }, function() { return Array(amount).fill(0); });
     background(-1, 0);
 
     // Predefs for the spiral color fills
-    var spiralColors = [
-        ["spiralRed", color(255, 0, 0)],
-        ["spiralBlue", color(0, 0, 255)],
-        ["spiralGreen", color(0, 255, 0)],
-        ["spiralYellow", color(255, 255, 0)],
-        ["spiralPurple", color(217, 0, 255)],
-        ["spiralOrange", color(255, 140, 0)],
-        ["spiralBrown", color(110, 81, 44)]
-    ], colorIndex = -1, finished = true;
+    let colorIndex = -1, finished = true;
     function renderNext() {
         colorIndex++;
         c = 0;
@@ -3431,8 +3442,6 @@ const cataclysmicIntro = new CataclysmicIntro();
 /** Initiate **/
 // [
 
-// parseSpirals();
-
 /**
  * 
  * @param {string} type - 
@@ -4121,6 +4130,7 @@ const pages = new Pages({
                             }
                         }
                     }else{
+                        parseSpirals();
                         console.log('---Images loaded---');
                         pages.showPage("loadAudio");
                     }
