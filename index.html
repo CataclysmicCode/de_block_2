@@ -2075,6 +2075,9 @@ class Block {
         if(this.onChange) {
             this.onChange(this);
         }
+        if (this.strength <= 0) {
+            this.colorName = "none";
+        }
     }
     setColor(strength, colorName) {
         // Sadly, no
@@ -3617,7 +3620,11 @@ let blockData = {
         type: "blank",
         canChangeColor: 1,
         canCollide: 1,
-        colorAble: 1,
+        colorable: 1,
+        nextType: "a",
+        onChange: function() {
+            console.log(this);
+        }
     },
     "c": {
         type: "red",
@@ -3986,7 +3993,7 @@ const pages = new Pages({
             particles: new ParticleSystem(),
             draw: function() {
                 
-                let bigPapa = backgrounds.Industrial[1];
+                let bigPapa = backgrounds.Forest[2];
                 for (let i = 0; i < bigPapa.length; i++) {
                     let img = bigPapa[i], h = 600, w = (img.width / img.height) * 600;
                     ctx.drawImage(img, ((((-cam.x - 1200) / 20) * (i + 1)) % (w * 2 - 2)) + w, 0, w, h);
