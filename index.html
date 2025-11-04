@@ -1174,6 +1174,7 @@ function parseSpirals() {
         c = 0;
         grid = Array.from({ length: amount }, function() { return Array(amount).fill(0); });
         background(0, 0);
+        image(art.blank, 0, 0, amount, amount);
     }
     function setPixel(x, y, a, a2) {
         if (y < grid.length && y >= 0 && x < grid[y].length && x >= 0 && grid[y][x] !== 1) {
@@ -1673,6 +1674,7 @@ class Enemy {
         let X = floor((this.x + PADDING_X) / blockW)-1,
             Y = floor((this.y + PADDING_Y) / blockH)-1,
             toX, toY;
+        this.isStuck = true;
         for (let y = max(Y, 0); y < min(Y+4, blocks.length); y++) {
             for (let x = max(X, 0); x < min(X+4, blocks[y].length); x++) {
                 
@@ -1708,6 +1710,8 @@ class Enemy {
                             this.vy = 0;
                             toY = block.y + block.h;
                         }
+                    } else {
+                        this.isStuck = false;
                     }
                     if (block.isLiquid) {
                         this.inLiquid = true;
@@ -2097,68 +2101,56 @@ class Block {
     }
     draw() {
 
-        // Temporary! Fix!
-        if (!art[this.type]) {
-            this.display(art.blank, this.x, this.y, this.w, this.h);
-            let n = (cos(frameCount) / 2 + 0.5) * 100 + 50;
-            noStroke();
-            switch (this.type) {
-                case "red":
-                    fill(222.5, 0, 0, n);
-                    break;
-                case "green":
-                    fill(30, 200, 30, n);
-                    break;
-                case "blue":
-                    fill(40, 40, 220, n);
-                    break;
-                case "purple":
-                    fill(127.5, 0, 255, n);
-                    break;
-                case "orange":
-                    fill(255, 120, 0, n);
-                    break;
-                case "yellow":
-                    fill(220, 220, 30, n);
-                    break;
-                case "brown":
-                    fill(100, 50, 0, n);
-                    break;
-            }
-            rect(this.x, this.y, this.w + 1, this.h + 1);
-            return;
-        }
+        let name = (this.colorable ? (this.colorName !== "none" ? this.colorName : this.type) : this.type);
 
-        if (art[this.type].length) {
+        if (art[name].length) {
             if (this.canInfiniteAnimate) {
-                let mapped = floor((abs(this.transition)/this.animateSpeed)%art[this.type].length);
-                this.display(art[this.type][mapped], this.x, this.y, this.w, this.h);
+                let mapped = floor((abs(this.transition)/this.animateSpeed)%art[name].length);
+                this.display(art[name][mapped], this.x, this.y, this.w, this.h);
             } else {
 
                 // A block is being colored!
                 if (this.strength > 0) {
-                    let mapped = round(map(this.transition, this.transSpeed, 0, art[this.type].length-1, 0));
-                    if (this.transition < 0) {
-                        mapped = art[this.type].length-1;
+                    // Make an exception for colorable blocks
+                    if (this.colorable) {
+                        let mapped = round(map(this.transition, this.transSpeed, 0, 0, art[name].length-1));
+                        if (this.transition < 0) {
+                            mapped = art[name].length-1;
+                        }
+                        this.display(art[name][constrain(mapped, 0, art[name].length-1)], this.x, this.y, this.w, this.h);
+                    } else {
+                        let mapped = round(map(this.transition, this.transSpeed, 0, art[name].length-1, 0));
+                        if (this.transition < 0) {
+                            mapped = art[name].length-1;
+                        }
+                        this.display(art[name][constrain(mapped, 0, art[name].length-1)], this.x, this.y, this.w, this.h);
                     }
-                    this.display(art[this.type][constrain(mapped, 0, art[this.type].length-1)], this.x, this.y, this.w, this.h);
                 }
 
                 // A block is decaying...
                 else {
-                    let mapped = round(map(this.transition, -this.transSpeed, 0, art[this.type].length-1, 0));
-                    if (this.transition < -this.transSpeed) {
-                        mapped = art[this.type].length-1;
+                    // Make an exception for colorable blocks
+                    if(this.colorable) {
+                        let mapped = round(map(this.transition, -this.transSpeed, 0, 0, art[name].length-1));
+                        if (this.transition < -this.transSpeed) {
+                            mapped = 0;
+                        }
+                        this.display(art[name][constrain(mapped, 0, art[name].length-1)], this.x, this.y, this.w, this.h);
+                    } else {
+                        let mapped = round(map(this.transition, -this.transSpeed, 0, art[name].length-1, 0));
+                        if (this.transition < -this.transSpeed) {
+                            mapped = art[name].length-1;
+                        }
+                        this.display(art[name][constrain(mapped, 0, art[name].length-1)], this.x, this.y, this.w, this.h);
                     }
-                    this.display(art[this.type][constrain(mapped, 0, art[this.type].length-1)], this.x, this.y, this.w, this.h);
                 }
 
             }
         } else {
-            this.display(art[this.type], this.x, this.y, this.w, this.h);
+            this.display(art[name], this.x, this.y, this.w, this.h);
         }
         
-        if (!this.canAnimate && this.canChangeColor) {
+        if (!this.canAnimate && this.canChangeColor && !this.colorable) {
             
             // A block is being colored!
             if (this.strength > 0) {
@@ -2207,6 +2199,37 @@ class Block {
             }
 
         }
+        
+        if (this.colorable && this.type !== this.colorName) {
+            let n = (cos(frameCount) / 2 + 0.5) * 200;
+            noStroke();
+            noFill();
+            switch (this.type) {
+                case "red":
+                    fill(222.5, 0, 0, n);
+                    break;
+                case "green":
+                    fill(30, 200, 30, n);
+                    break;
+                case "blue":
+                    fill(40, 40, 220, n);
+                    break;
+                case "purple":
+                    fill(127.5, 0, 255, n);
+                    break;
+                case "orange":
+                    fill(255, 120, 0, n);
+                    break;
+                case "yellow":
+                    fill(220, 220, 30, n);
+                    break;
+                case "brown":
+                    fill(100, 50, 0, n);
+                    break;
+            }
+            rect(this.x, this.y, this.w + 1, this.h + 1);
+        }
+    
     }
     shadow() {
         noStroke();
@@ -2231,9 +2254,6 @@ class Block {
 
         if(this.onChange) {
             this.onChange(this);
-        }
-        if (this.strength <= 0) {
-            this.colorName = "none";
         }
     }
     setColor(strength, colorName) {
@@ -3890,21 +3910,21 @@ let levels = [
         "-OOOOGGGOOOOOOOOOOOOOOOOOOOOOOOGGGG",
     ],
     [
-        "------------------------------------------------------------------------------------------------",
-        "------------------------------------------------------------------------------------------------",
-        "-------------------------------------------------#----------------------------------------------",
-        "-------------------------------------------------#----------------------------------------------",
-        "-------------------------------------------------#----------------------------------------------",
-        "-aczh--------------------------------------------#----------------------------------------------",
-        "-ijkp--------------------------------------------#----------------------------------------------",
-        "@--------GGGGGGGGGGGGGG-GGG----------------------#----------------------------------------------",
-        "SSS444444SSSSSSSSSSSSSS-GGGGGG-------------------#----------------------------------------------",
-        "SSS444444SSSSSSSSSSSSSS-SSSSGGGGGG-TMT-----------#---------------------------------############G",
-        "SSS444444SSSSSSSSSSSSSS-SSSSSSSSSGGGGG-T---------#---------------------------------############G",
-        "SSS444SSSSSSSS111-------SSSSSSSSSSSSGGGGM--------#---------------------------------############G",
-        "SSSS444SSSSSSSSSS-------R-FM----SSSSSSSGG-TM-----#---------------------------------############G",
-        "-SSSS444444SSSSSM-R-FF--GGGGGF--GGSSSSSSGGGGGT---#--------------------------------############GG",
-        "--SS444444SSSSSGGGGGGGF---GGGG--R-GGSSSSSGGGGGMT-#--------------------------------###########GGG",
+        "----------------G-------------------------------GG----------------------------------------------",
+        "---------------G--------------------------------G-----------------------------------------------",
+        "--------------G---------------------------------G#----------------------------------------------",
+        "-------------G----------------------------------G#----------------------------------------------",
+        "------------G-----------------------------------G#----------------------------------------------",
+        "-aczh------G------------------------------------G#----------------------------------------------",
+        "-ijkp-----G-------------------------------------G#----------------------------------------------",
+        "@--------GGGGGGGGGGGGGG-GGG---------------------G#----------------------------------------------",
+        "SSS444444SSSSSSSSSSSSSS-GGGGGG------------------G#----------------------------------------------",
+        "SSS444444SSSSSSSSSSSSSS-SSSSGGGGGG-TMT----------G#---------------------------------############G",
+        "SSS444444SSSSSSSSSSSSSS-SSSSSSSSSGGGGG-T--------G#---------------------------------############G",
+        "SSS444SSSSSSSS111-------SSSSSSSSSSSSGGGGM-------G#---------------------------------############G",
+        "SSSS444SSSSSSSSSS-------R-FM----SSSSSSSGG-TM----G#---------------------------------############G",
+        "-SSSS444444SSSSSM-R-FF--GGGGGF--GGSSSSSSGGGGGT--G#--------------------------------############GG",
+        "--SS444444SSSSSGGGGGGGF---GGGG--R-GGSSSSSGGGGGMTG#--------------------------------###########GGG",
         "---SSSSSS44SSSSSSSSSGGG--FMR-MM-GGGSSSSSSSSSSGGGG#-----------------------------GGGGGGGGGGGGGGGGG",
         "--SSSSSSS4444------------GGGGGGGGGSSSSSSSSSSSSGGG#-G---------------------GGGGGGGGGGGGGGGGGGGGGGG",
         "-SSSSSS-----------------SSSSSSSSSSSSSS------##SSG#GGGGG-----------------------------------------",
