@@ -1175,6 +1175,8 @@ function parseSpirals() {
         grid = Array.from({ length: amount }, function() { return Array(amount).fill(0); });
         background(0, 0);
         image(art.blank, 0, 0, amount, amount);
+        //art[spiralColors[colorIndex][0]].push(get(0, 0, amount, amount));
+        get(0, 0, amount, amount)
     }
     function setPixel(x, y, a, a2) {
         if (y < grid.length && y >= 0 && x < grid[y].length && x >= 0 && grid[y][x] !== 1) {
@@ -1246,11 +1248,11 @@ function parseSpirals() {
         }
         
         // Capture the image every couple frames
-        if (i % 5 === 0) art[spiralColors[colorIndex][0]].push(get(0, 0, 100, 100));
+        if (i % 5 === 0) art[spiralColors[colorIndex][0]].push(get(0, 0, amount, amount));
 
         // Render the next spiral
         if (finished) {
-            art[spiralColors[colorIndex][0]].push(get(0, 0, 100, 100));
+            art[spiralColors[colorIndex][0]].push(get(0, 0, amount, amount));
             renderNext();
         }
         if (colorIndex === spiralColors.length) break;
@@ -2200,7 +2202,7 @@ class Block {
 
         }
         
-        if (this.colorable && this.type !== this.colorName) {
+        if (this.colorable && (this.type !== this.colorName || !this.colored)) {
             let n = (cos(frameCount) / 2 + 0.5) * 200;
             noStroke();
             noFill();
@@ -2260,8 +2262,6 @@ class Block {
         // Sadly, no
         if (!this.canChangeColor) return;
 
-        if (colorName) this.colorName = colorName;
-
         // Colorize!
         if (strength > 0) {
 
@@ -2272,11 +2272,19 @@ class Block {
             if (this.transition >= -this.transSpeed && this.canColor()) return;
 
             // Set color for the first time
-            if (this.canColor()) {
+            if (this.canColor() || (this.colorable && this.colorName !== colorName)) {
                 this.transition = this.transSpeed;
                 player.colorStrength = max(player.colorStrength - player.colorDecrease, 0);
-                player.hasColored++;
+                if (this.colorable) {
+                    if (this.type === this.colorName || this.type === "blank") {
+                        player.hasColored++;
+                    }
+                } else { 
+                    player.hasColored++;
+                }
             }
+
+            if (colorName) this.colorName = colorName;
 
             this.strength = strength;
             this.setLowLight(255);
@@ -3910,21 +3918,21 @@ let levels = [
         "-OOOOGGGOOOOOOOOOOOOOOOOOOOOOOOGGGG",
     ],
     [
-        "----------------G-------------------------------GG----------------------------------------------",
-        "---------------G--------------------------------G-----------------------------------------------",
-        "--------------G---------------------------------G#----------------------------------------------",
-        "-------------G----------------------------------G#----------------------------------------------",
-        "------------G-----------------------------------G#----------------------------------------------",
-        "-aczh------G------------------------------------G#----------------------------------------------",
-        "-ijkp-----G-------------------------------------G#----------------------------------------------",
-        "@--------GGGGGGGGGGGGGG-GGG---------------------G#----------------------------------------------",
-        "SSS444444SSSSSSSSSSSSSS-GGGGGG------------------G#----------------------------------------------",
-        "SSS444444SSSSSSSSSSSSSS-SSSSGGGGGG-TMT----------G#---------------------------------############G",
-        "SSS444444SSSSSSSSSSSSSS-SSSSSSSSSGGGGG-T--------G#---------------------------------############G",
-        "SSS444SSSSSSSS111-------SSSSSSSSSSSSGGGGM-------G#---------------------------------############G",
-        "SSSS444SSSSSSSSSS-------R-FM----SSSSSSSGG-TM----G#---------------------------------############G",
-        "-SSSS444444SSSSSM-R-FF--GGGGGF--GGSSSSSSGGGGGT--G#--------------------------------############GG",
-        "--SS444444SSSSSGGGGGGGF---GGGG--R-GGSSSSSGGGGGMTG#--------------------------------###########GGG",
+        "------------------------------------------------------------------------------------------------",
+        "------------------------------------------------------------------------------------------------",
+        "------------------------------------------------------------------------------------------------",
+        "------------------------------------------------------------------------------------------------",
+        "--aa--------------------------------------------------------------------------------------------",
+        "-aaaa-------------------------------------------------------------------------------------------",
+        "-aaaa-------------------------------------------------------------------------------------------",
+        "@--------GG5555GGGGGGGG-GGG---------------------------------------------------------------------",
+        "SSS444444SSS555SSSSSSSS-GGGGGG------------------------------------------------------------------",
+        "SSS444444SSSSSSSSSSSSSS-SSSSGGGGGG-TMT---------------------------------------------############G",
+        "SSS444444SSSSSSSSSSSSSS-SSSSSSSSSGGGGG-T-------------------------------------------############G",
+        "SSS444SSSSSSSS111-------SSSSSSSSSSSSGGGGM------------------------------------------############G",
+        "SSSS444SSSSSSSSSS-------R-FM----SSSSSSSGG-TM---------------------------------------############G",
+        "-SSSS444444SSSSSM-R-FF--GGGGGF--GGSSSSSSGGGGGT------------------------------------############GG",
+        "--SS444444SSSSSGGGGGGGF---GGGG--R-GGSSSSSGGGGGMT----------------------------------###########GGG",
         "---SSSSSS44SSSSSSSSSGGG--FMR-MM-GGGSSSSSSSSSSGGGG#-----------------------------GGGGGGGGGGGGGGGGG",
         "--SSSSSSS4444------------GGGGGGGGGSSSSSSSSSSSSGGG#-G---------------------GGGGGGGGGGGGGGGGGGGGGGG",
         "-SSSSSS-----------------SSSSSSSSSSSSSS------##SSG#GGGGG-----------------------------------------",
