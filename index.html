@@ -223,7 +223,7 @@
         let audioNames = "cute1 cute2 cute3 cute4 cute5 happy1 happy2 splash1 splash2 underwater wilhelm dark1 dark2 dark3 dark4 egg1 egg2 bossfight cataclysmic_intro cave1 crumble1 crumble2 evil_talking garble landing hard_landing master_intro pitbull powerup talking1 dial_up".split(" ");
         
         let totalAudio = audioNames.length, loadedAudio = 0;
-        for(let i = 0; i < totalAudio; i++){
+        for (let i = 0; i < totalAudio; i++) {
             let dScript = document.createElement('script');
             dScript.src = 'https://cdn.jsdelivr.net/gh/CataclysmicCode/de_block_2/Audio/'+audioNames[i]+'.min.js';
             document.body.appendChild(dScript);
@@ -362,7 +362,7 @@
             };
         }
 
-        function parseAudio(){
+        function parseAudio() {
             
             console.log('---Parsing audio---');
             
@@ -532,17 +532,17 @@
 
         }
 
-        function stopAllSounds(){
+        function stopAllSounds() {
             for(let sound in sounds){
                 sounds[sound].stop();
             }
         }
-        function stopAllSongs(){
+        function stopAllSongs() {
             for(let song in songs){
                 songs[song].stop();
             }
         }
-        function stopAllAudio(){
+        function stopAllAudio() {
             stopAllSounds();
             stopAllSongs();
         }
@@ -1174,8 +1174,8 @@ function parseSpirals() {
         c = 0;
         grid = Array.from({ length: amount }, function() { return Array(amount).fill(0); });
         background(0, 0);
-        image(art.blank, 0, 0, amount, amount);
-        //art[spiralColors[colorIndex][0]].push(get(0, 0, amount, amount));
+        // image(art.blank, 0, 0, amount, amount);
+        // art[spiralColors[colorIndex][0]].push(get(0, 0, amount, amount));
         get(0, 0, amount, amount)
     }
     function setPixel(x, y, a, a2) {
@@ -2069,6 +2069,7 @@ class Block {
         // Color handling
         this.strength = 0;
         this.canSpread = false;
+        this.lastColorName = "none";
         this.colorName = "none";
         
         // Transition
@@ -2105,12 +2106,11 @@ class Block {
 
         let name = (this.colorable ? (this.colorName !== "none" ? this.colorName : this.type) : this.type);
 
-        if (art[name].length) {
+        if (art[name].length || this.colorable) {
             if (this.canInfiniteAnimate) {
                 let mapped = floor((abs(this.transition)/this.animateSpeed)%art[name].length);
                 this.display(art[name][mapped], this.x, this.y, this.w, this.h);
             } else {
-
                 // A block is being colored!
                 if (this.strength > 0) {
                     // Make an exception for colorable blocks
@@ -2118,6 +2118,12 @@ class Block {
                         let mapped = round(map(this.transition, this.transSpeed, 0, 0, art[name].length-1));
                         if (this.transition < 0) {
                             mapped = art[name].length-1;
+                        }
+                        // Display the old color underneath
+                        if (this.lastColorName === "none") {
+                            this.display(art.blank, this.x, this.y, this.w, this.h);
+                        } else {
+                            this.display(art[this.lastColorName][art[this.lastColorName].length - 1], this.x, this.y, this.w, this.h);
                         }
                         this.display(art[name][constrain(mapped, 0, art[name].length-1)], this.x, this.y, this.w, this.h);
                     } else {
@@ -2127,17 +2133,21 @@ class Block {
                         }
                         this.display(art[name][constrain(mapped, 0, art[name].length-1)], this.x, this.y, this.w, this.h);
                     }
-                }
 
+                }
                 // A block is decaying...
                 else {
                     // Make an exception for colorable blocks
                     if(this.colorable) {
-                        let mapped = round(map(this.transition, -this.transSpeed, 0, 0, art[name].length-1));
-                        if (this.transition < -this.transSpeed) {
-                            mapped = 0;
+                        name = this.lastColorName;
+                        this.display(art.blank, this.x, this.y, this.w, this.h);
+                        if (name !== "none") {
+                            let mapped = round(map(this.transition, -this.transSpeed, 0, 0, art[name].length-1));
+                            if (this.transition < -this.transSpeed) {
+                                mapped = 0;
+                            }
+                            this.display(art[name][constrain(mapped, 0, art[name].length-1)], this.x, this.y, this.w, this.h);
                         }
-                        this.display(art[name][constrain(mapped, 0, art[name].length-1)], this.x, this.y, this.w, this.h);
                     } else {
                         let mapped = round(map(this.transition, -this.transSpeed, 0, art[name].length-1, 0));
                         if (this.transition < -this.transSpeed) {
@@ -2269,22 +2279,24 @@ class Block {
             if (strength < this.strength) return;
 
             // Decay transition in progress, maybe later
-            if (this.transition >= -this.transSpeed && this.canColor()) return;
+            if (this.transition >= -this.transSpeed && this.canColor(colorName)) return;
 
             // Set color for the first time
-            if (this.canColor() || (this.colorable && this.colorName !== colorName)) {
+            if (this.canColor(colorName)) {
                 this.transition = this.transSpeed;
                 player.colorStrength = max(player.colorStrength - player.colorDecrease, 0);
+
+                this.lastColorName = this.colorName;
+                this.colorName = colorName;
+
                 if (this.colorable) {
                     if (this.type === this.colorName || this.type === "blank") {
                         player.hasColored++;
                     }
-                } else { 
+                } else {
                     player.hasColored++;
                 }
             }
-
-            if (colorName) this.colorName = colorName;
 
             this.strength = strength;
             this.setLowLight(255);
@@ -2303,8 +2315,16 @@ class Block {
             
             // Start decaying for the first time
             if (this.canDecay()) {
+                this.lastColorName = this.colorName;
+                this.colorName = "none";
                 this.transition = this.transSpeed;
-                player.hasColored--;
+                if (this.colorable) {
+                    if (this.type === this.lastColorName || this.type === "blank") {
+                        player.hasColored--;
+                    }
+                } else {
+                    player.hasColored--;
+                }
             }
 
             this.strength = strength;
@@ -2348,8 +2368,8 @@ class Block {
     canDecay() {
         return this.strength > 0;
     }
-    canColor() {
-        return this.strength <= 0;
+    canColor(colorName) {
+        return this.strength <= 0 || (this.colorable && this.colorName !== colorName);
     }
     isDecayed() {
         return this.strength < 0;
@@ -2390,7 +2410,7 @@ class Block {
         });
 
     }
-
+    
     /**
      * Update the block
      **/
@@ -3926,20 +3946,20 @@ let levels = [
         "-aaaa-------------------------------------------------------------------------------------------",
         "-aaaa-------------------------------------------------------------------------------------------",
         "@--------GG5555GGGGGGGG-GGG---------------------------------------------------------------------",
-        "SSS444444SSS555SSSSSSSS-GGGGGG------------------------------------------------------------------",
-        "SSS444444SSSSSSSSSSSSSS-SSSSGGGGGG-TMT---------------------------------------------############G",
-        "SSS444444SSSSSSSSSSSSSS-SSSSSSSSSGGGGG-T-------------------------------------------############G",
-        "SSS444SSSSSSSS111-------SSSSSSSSSSSSGGGGM------------------------------------------############G",
-        "SSSS444SSSSSSSSSS-------R-FM----SSSSSSSGG-TM---------------------------------------############G",
-        "-SSSS444444SSSSSM-R-FF--GGGGGF--GGSSSSSSGGGGGT------------------------------------############GG",
-        "--SS444444SSSSSGGGGGGGF---GGGG--R-GGSSSSSGGGGGMT----------------------------------###########GGG",
-        "---SSSSSS44SSSSSSSSSGGG--FMR-MM-GGGSSSSSSSSSSGGGG#-----------------------------GGGGGGGGGGGGGGGGG",
-        "--SSSSSSS4444------------GGGGGGGGGSSSSSSSSSSSSGGG#-G---------------------GGGGGGGGGGGGGGGGGGGGGGG",
-        "-SSSSSS-----------------SSSSSSSSSSSSSS------##SSG#GGGGG-----------------------------------------",
-        "-SSSS---------------------------------------####S#SSSGGGGG-MMQQ--MQ-MQ-MM--QQMQ-QM-QQ-----------",
-        "--SSSSL-------------------L---L-L---LLLL-LLL######SSSSSSSGGGGGGGGGGGGGGGGGGGGGGGGGGGG55555555GGG",
-        "----SSSS---LBB-L-BB-L-BBSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS555SSSSS",
-        "-----OOO222SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS----SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS55SSSSSS",
+        "aaa444444aaa555aaaaaaaa-GGGGGG------------------------------------------------------------------",
+        "aaa444444aaaaaaaaaaaaaa-aaaaGGGGGG-TMT---------------------------------------------############G",
+        "aaa444444aaaaaaaaaaaaaa-aaaaaaaaaGGGGG-T-------------------------------------------############G",
+        "aaa444aaaaaaaa111-------aaaaaaaaaaaaGGGGM------------------------------------------############G",
+        "aaaa444aaaaaaaaaa-------R-FM----aaaaaaaGG-TM---------------------------------------############G",
+        "-aaaa444444aaaaaM-R-FF--GGGGGF--GGaaaaaaGGGGGT------------------------------------############GG",
+        "--aa444444aaaaaGGGGGGGF---GGGG--R-GGaaaaaGGGGGMT----------------------------------###########GGG",
+        "---aaaaaa44aaaaaaaaaGGG--FMR-MM-GGGaaaaaaaaaaGGGG#-----------------------------GGGGGGGGGGGGGGGGG",
+        "--aaaaaaa4444------------GGGGGGGGGaaaaaaaaaaaaGGG#-G---------------------GGGGGGGGGGGGGGGGGGGGGGG",
+        "-aaaaaa-----------------aaaaaaaaaaaaaa------##aaG#GGGGG-----------------------------------------",
+        "-aaaa---------------------------------------####a#aaaGGGGG-MMQQ--MQ-MQ-MM--QQMQ-QM-QQ-----------",
+        "--aaaaL-------------------L---L-L---LLLL-LLL######aaaaaaaGGGGGGGGGGGGGGGGGGGGGGGGGGGG55555555GGG",
+        "----aaaa---LBB-L-BB-L-BBaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa555aaaaa",
+        "-----OOO222aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa----aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa55aaaaaa",
         "-------OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO-----------------OOOOOOOOOOOOOOOOOOOOOOOOOOOOOO",
         "----------OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO---------------------OOOOOOOOOOOOOOOOOOOOOOOOOOOO",
     ],
