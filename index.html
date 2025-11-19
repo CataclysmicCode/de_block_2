@@ -889,12 +889,12 @@ for(let a = 0; a < colorSub.length; a++){
 
 }
 
-if(instantLoad){
+if (instantLoad){
 
     // Render art
     noStroke();
     for(let a in art){
-        if(typeof art[a][0] === "string"){
+        if (typeof art[a][0] === "string"){
             background(0, 0);
             let pixelW = 400/art[a][0].length,
                 pixelH = 400/art[a].length;
@@ -922,7 +922,7 @@ if(instantLoad){
     }
     for(let s in sprites){
         background(0, 0);
-        if(typeof sprites[s][0] === "string"){
+        if (typeof sprites[s][0] === "string"){
             background(0, 0);
             let pixelW = 400/sprites[s][0].length,
                 pixelH = height/sprites[s].length;
@@ -1074,7 +1074,6 @@ for (let letter in pixelFont) {
         255
     ];
     for (let a = 0; a < 2; a++) {
-
         fill(fontColors[a]);
         stroke(fontColors[a]);
         const pixelSize = 20;
@@ -1088,7 +1087,6 @@ for (let letter in pixelFont) {
         
         // Store the current letter in the pixel art array
         pixelFont[letter].push(get(0, 0, pixelSize * data[0].length, pixelSize * data.length));
-
     }
 
 }
@@ -1427,7 +1425,7 @@ class Page {
     }
     update() {
         try {
-            if(this.visible) this.draw();
+            if (this.visible) this.draw();
         } catch(err) {
             println("Oops looks like something went wrong! Please try restarting the program. Check the console for more info.");
             console.error(err);
@@ -1684,7 +1682,7 @@ class Enemy {
                     overlapX = this.x-block.x < 0?(this.w+(this.x-block.x)):(block.w-(this.x-block.x)),
                     overlapY = this.y-block.y < 0?(this.h+(this.y-block.y)):(block.h-(this.y-block.y)),
                     touching = (overlapY > this.h/2) && (overlapX > this.w/2);
-                if(block.canCollide) this.isNear = true;
+                if (block.canCollide) this.isNear = true;
                 if (
                     this.x + this.w > block.x &&
                     this.y + this.h > block.y &&
@@ -1695,20 +1693,20 @@ class Enemy {
                     // Handle collision
                     if (block.canCollide) {
                         this.isTouching = true;
-                        if(vx > 0) {
+                        if (vx > 0) {
                             this.vx = 0;
                             toX = block.x - this.w;
                         }
-                        if(vx < 0) {
+                        if (vx < 0) {
                             this.vx = 0;
                             toX = block.x + block.w;
                         }
-                        if(vy > 0) {
+                        if (vy > 0) {
                             this.isGrounded = true;
                             this.vy = 0;
                             toY = block.y - this.h;
                         }
-                        if(vy < 0) {
+                        if (vy < 0) {
                             this.vy = 0;
                             toY = block.y + block.h;
                         }
@@ -1725,10 +1723,10 @@ class Enemy {
             }
         }
         
-        if(toX !== undefined){
+        if (toX !== undefined){
             this.x = toX;
         }
-        if(toY !== undefined){
+        if (toY !== undefined){
             this.y = toY;
         }
     }
@@ -1988,7 +1986,7 @@ class GoodRottweiler {
         this.x += this.vx;
         this.y += this.vy;
 
-        if(this.x > levelW) this.dead = true;
+        if (this.x > levelW) this.dead = true;
     
     }
 }
@@ -2040,7 +2038,7 @@ class Bird {
         this.x += this.vx;
         this.y += this.vy;
 
-        if(this.x > levelW) this.dead = true;
+        if (this.x > levelW) this.dead = true;
     
     }
 }
@@ -2138,7 +2136,7 @@ class Block {
                 // A block is decaying...
                 else {
                     // Make an exception for colorable blocks
-                    if(this.colorable) {
+                    if (this.colorable) {
                         name = this.lastColorName;
                         this.display(art.blank, this.x, this.y, this.w, this.h);
                         if (name !== "none") {
@@ -2161,6 +2159,11 @@ class Block {
         } else {
             this.display(art[name], this.x, this.y, this.w, this.h);
         }
+
+        textSize(10);
+        fill(0);
+        textAlign(CENTER, CENTER);
+        text(this.colorName, this.x + this.w / 2, this.y + this.h / 2);
         
         if (!this.canAnimate && this.canChangeColor && !this.colorable) {
             
@@ -2174,7 +2177,7 @@ class Block {
                     strokeWeight((this.w/amount)/2);
                     for(let i = 0; i < amount; i++){
                         let size = i*(this.transSpeed/amount);
-                        if(this.transition+size > 0 && this.transition+size < this.transSpeed){
+                        if (this.transition+size > 0 && this.transition+size < this.transSpeed){
                             stroke(map(i, 0, amount, 0, 255), 180, 180, 200);
                             rect(
                                 this.x+this.w/2,
@@ -2264,7 +2267,7 @@ class Block {
             this[i] = blockData[type][i];
         }
 
-        if(this.onChange) {
+        if (this.onChange) {
             this.onChange(this);
         }
     }
@@ -2274,9 +2277,6 @@ class Block {
 
         // Colorize!
         if (strength > 0) {
-
-            // No point, color is less than this
-            if (strength < this.strength) return;
 
             // Decay transition in progress, maybe later
             if (this.transition >= -this.transSpeed && this.canColor(colorName)) return;
@@ -2307,12 +2307,9 @@ class Block {
         // Decayize™️...
         else if (strength <= 0) {
 
-            // No point, it's already too far gone );
-            if (strength > this.strength) return;
-
             // Color transition in progress, maybe later
             if (this.transition >= -this.transSpeed && this.canDecay()) return;
-            
+
             // Start decaying for the first time
             if (this.canDecay()) {
                 this.lastColorName = this.colorName;
@@ -2398,7 +2395,7 @@ class Block {
 
         // Spread the death
         touching.forEach((v) => {
-            if((this.strength + 1) <= blocks[v[0]][v[1]].strength && this.strength < 0) blocks[v[0]][v[1]].setColor(this.strength + 1, this.colorName);
+            if ((this.strength + 1) <= blocks[v[0]][v[1]].strength && this.strength < 0) blocks[v[0]][v[1]].setColor(this.strength + 1, this.colorName);
         });
 
     }
@@ -2406,7 +2403,7 @@ class Block {
 
         // Spread the joy
         touching.forEach((v) => {
-            if((this.strength - 1) >= blocks[v[0]][v[1]].strength && this.strength > 0) blocks[v[0]][v[1]].setColor(this.strength - 1, this.colorName);
+            if ((this.strength - 1) >= blocks[v[0]][v[1]].strength && this.strength > 0) blocks[v[0]][v[1]].setColor(this.strength - 1, this.colorName);
         });
 
     }
@@ -2421,8 +2418,8 @@ class Block {
     logic() {
 
         // Animation
-        if(this.transition === 0){
-            if(this.nextType){
+        if (this.transition === 0){
+            if (this.nextType){
                 this.changeTo(this.nextType);
             }
         }
@@ -2430,20 +2427,20 @@ class Block {
 
         // Turn dirt to grass
         let blockAbove = blocks[max(this.index[0]-1, 0)][this.index[1]];
-        if(this.type === "grayGrassBlock" && blockAbove){
-            if(blockAbove.canCollide && blockAbove.id !== this.id){
+        if (this.type === "grayGrassBlock" && blockAbove){
+            if (blockAbove.canCollide && blockAbove.id !== this.id){
                 this.changeTo("D");
             }
         }
-        if(this.type === "grassBlock"  && blockAbove){
-            if(blockAbove.canCollide && blockAbove.id !== this.id){
+        if (this.type === "grassBlock"  && blockAbove){
+            if (blockAbove.canCollide && blockAbove.id !== this.id){
                 this.changeTo("d");
             }
         }
         
         // Add tops to liquid
-        if(this.isLiquid  && blockAbove && this.nextType){
-            if(blockAbove.type === "air" || blockAbove.id === this.id){
+        if (this.isLiquid  && blockAbove && this.nextType){
+            if (blockAbove.type === "air" || blockAbove.id === this.id){
                 this.changeTo(this.nextType);
             }
         }
@@ -2560,7 +2557,7 @@ class Player {
                     overlapX = max(0, min(this.x + this.w, block.x + block.w) - max(this.x, block.x)),
                     overlapY = max(0, min(this.y + this.h, block.y + block.h) - max(this.y, block.y)),
                     touching = (overlapY > this.h/4) && (overlapX > this.w/4);
-                if(
+                if (
                     this.x + this.w > block.x &&
                     this.y + this.h > block.y &&
                     block.x + block.w > this.x &&
@@ -2568,16 +2565,16 @@ class Player {
                     ) {
                     
                     // Handle collision
-                    if(block.canCollide){
-                        if(vx > 0) {
+                    if (block.canCollide){
+                        if (vx > 0) {
                             this.vx = 0;
                             toX = block.x - this.w;
                         }
-                        if(vx < 0) {
+                        if (vx < 0) {
                             this.vx = 0;
                             toX = block.x + block.w;
                         }
-                        if(vy > 0) {
+                        if (vy > 0) {
                             if (this.colorStrength > 0 && this.vy > 1) {
                                 for(let i = 0; i < (this.vy * (this.colorStrength / 20)) / 2; i++){
                                     pages.Page.particles.add(new Particle({
@@ -2606,28 +2603,28 @@ class Player {
                             this.vy = 0;
                             toY = block.y - this.h;
                         }
-                        if(vy < 0) {
+                        if (vy < 0) {
                             this.vy = 0;
                             toY = block.y + block.h;
                         }
                     }
-                    if(block.isLiquid && touching){
+                    if (block.isLiquid && touching){
                         this.inLiquid = block;
                         this.colorName = block.name;
                         this.canJump = true;
                     }
                     
-                    if(this.colorStrength !== 0) block.setColor(ceil(this.colorStrength/20), this.colorName);
+                    if (this.colorStrength !== 0) block.setColor(ceil(this.colorStrength/20), this.colorName);
                     
                 }
                 
             }
         }
         
-        if(toX !== undefined){
+        if (toX !== undefined){
             this.x = toX;
         }
-        if(toY !== undefined){
+        if (toY !== undefined){
             this.y = toY;
         }
     }
@@ -2645,7 +2642,7 @@ class Player {
                     let block = blocks[i][j];
                     if (block.canChangeColor && block.strength <= 0) {
                         let d = dist(this.x, this.y, block.x, block.y);
-                        if(this.nearDark.block) {
+                        if (this.nearDark.block) {
                             if (this.nearDark.dist > d) {
                                 this.nearDark.block = blocks[i][j];
                                 this.nearDark.dist = d;
@@ -2720,25 +2717,25 @@ class Player {
         
         this.timeSinceColorChange++;
         let acc = 0.7, fri = 0.35, spd = Math.PI+Math.PI/2;
-        if(this.inLiquid){
+        if (this.inLiquid){
             
             // Handle movement
-            if(keys[37] || keys[65]) {
+            if (keys[37] || keys[65]) {
                 // Move left
                 this.vx -= acc;
             }
-            if(keys[39] || keys[68]) {
+            if (keys[39] || keys[68]) {
                 // Move right
                 this.vx += acc;
             }
-            if(keys[38] || keys[87]) {
+            if (keys[38] || keys[87]) {
                 // Move up
                 this.vy -= acc;
                 this.vy = max(this.vy, -4);
             }else{
                 this.vy = max(this.vy, -1);
             }
-            if(keys[40] || keys[83]) {
+            if (keys[40] || keys[83]) {
                 // Move down
                 this.vy += acc;
                 this.vy = min(this.vy, 4);
@@ -2749,7 +2746,7 @@ class Player {
     
             // Gain strength
             this.colorStrength = min(this.colorStrength+0.5, 100);
-            if(this.inLiquid.color !== this.color) {
+            if (this.inLiquid.color !== this.color) {
                 this.timeSinceColorChange = 0;
                 this.lastColor = this.color;
                 this.color = this.inLiquid.color;
@@ -2757,15 +2754,15 @@ class Player {
         }else{
     
             // Handle movement
-            if(keys[37] || keys[65]) {
+            if (keys[37] || keys[65]) {
                 // Move left
                 this.vx = max(this.vx - acc, -spd);
             }
-            if(keys[39] || keys[68]) {
+            if (keys[39] || keys[68]) {
                 // Move right
                 this.vx = min(this.vx + acc, spd);
             }
-            if((keys[38] || keys[87]) && this.canJump) {
+            if ((keys[38] || keys[87]) && this.canJump) {
                 // Jump
                 this.canJump = false;
                 this.vy = -Math.PI*3;
@@ -2818,13 +2815,13 @@ class Player {
         this.findPath();
 
         // Find the nearest darkened block
-        if(frameCount % 100 === 0) {
+        if (frameCount % 100 === 0) {
             this.findNearDark();
         }
         
         // Jumping in
-        if((!this.wasInLiquid && this.inLiquid)){
-            if(this.vy > 0){
+        if ((!this.wasInLiquid && this.inLiquid)){
+            if (this.vy > 0){
                 for(let i = 0; i < abs(this.vy*3); i++){
                     pages.Page.particles.add(new Particle({
                         x: random(this.x, this.x+this.w),
@@ -2847,8 +2844,8 @@ class Player {
         }
     
         // Jumping out
-        if((this.wasInLiquid && !this.inLiquid)){
-            if(this.vy < 0){
+        if ((this.wasInLiquid && !this.inLiquid)){
+            if (this.vy < 0){
                 for(let i = 0; i < abs(this.vy*3); i++){
                     pages.Page.particles.add(new Particle({
                         x: random(this.x, this.x+this.w),
@@ -2915,7 +2912,7 @@ class ParticleSystem {
         for(let i = this.particles.length-1; i >= 0; i--){
             let p = this.particles[i];
             p.update();
-            if(p.dead){
+            if (p.dead){
                 p.onDeath();
                 this.particles.splice(i, 1);
             }
@@ -3027,7 +3024,7 @@ class Particle {
         
         // Background logic
         this.life = this.health;
-        if(!this.h && this.image.width && this.image.height){
+        if (!this.h && this.image.width && this.image.height){
             this.h = map(this.w, 0, this.image.width, 0, this.image.height);
         }
         
@@ -3043,7 +3040,7 @@ class Particle {
         
         this.w = w;
         this.h = h||w;
-        if(!h && this.image.width && this.image.height){
+        if (!h && this.image.width && this.image.height){
             this.h = map(this.w, 0, this.image.width, 0, this.image.height);
         }
         
@@ -3087,20 +3084,20 @@ class Particle {
     logic(){
     
         this.onUpdate();
-        if(this.pause){
+        if (this.pause){
             this.pause--;
         }else{
-            if(round(this.x-this.toX) === 0 && round(this.y-this.toY) === 0){
+            if (round(this.x-this.toX) === 0 && round(this.y-this.toY) === 0){
                 this.onArrive();
             }
-            if(this.toX) this.x += easeOut(this.toX, this.x, this.toSpeed);
-            if(this.toY) this.y += easeOut(this.toY, this.y, this.toSpeed);
-            if(this.toW) this.w += easeOut(this.toW, this.w, this.toSpeed);
-            if(this.toH) this.h += easeOut(this.toH, this.h, this.toSpeed);
-            if(this.toRx) this.rx += easeOut(this.toRx % 360, this.rx, this.toRSpeed||this.toSpeed);
-            if(this.toRy) this.ry += easeOut(this.toRy % 360, this.ry, this.toRSpeed||this.toSpeed);
-            if(this.toRz) this.rz += easeOut(this.toRz % 360, this.rz, this.toRSpeed||this.toSpeed);
-            if(!this.health) this.dead = true;
+            if (this.toX) this.x += easeOut(this.toX, this.x, this.toSpeed);
+            if (this.toY) this.y += easeOut(this.toY, this.y, this.toSpeed);
+            if (this.toW) this.w += easeOut(this.toW, this.w, this.toSpeed);
+            if (this.toH) this.h += easeOut(this.toH, this.h, this.toSpeed);
+            if (this.toRx) this.rx += easeOut(this.toRx % 360, this.rx, this.toRSpeed||this.toSpeed);
+            if (this.toRy) this.ry += easeOut(this.toRy % 360, this.ry, this.toRSpeed||this.toSpeed);
+            if (this.toRz) this.rz += easeOut(this.toRz % 360, this.rz, this.toRSpeed||this.toSpeed);
+            if (!this.health) this.dead = true;
             this.health--;
         }
     
@@ -4108,9 +4105,9 @@ const pages = new Pages({
                 noStroke();
                 rectMode(CORNER);
                 let img = undefined;
-                if(this.loadedA < this.artKeys.length){
+                if (this.loadedA < this.artKeys.length){
                     let a = this.artKeys[this.loadedA];
-                    if(typeof art[a][0] === "string"){
+                    if (typeof art[a][0] === "string"){
                         background(0, 0);
                         let pixelW = 400/art[a][0].length,
                             pixelH = 400/art[a].length;
@@ -4135,7 +4132,7 @@ const pages = new Pages({
                         }
                         art[a][this.innerLoad] = get(0, 0, 400, 400);
                         img = art[a][this.innerLoad];
-                        if(this.innerLoad === art[a].length-1){
+                        if (this.innerLoad === art[a].length-1){
                             this.innerLoad = 0;
                             this.loadedA++;
                         }else{
@@ -4143,9 +4140,9 @@ const pages = new Pages({
                         }
                     }
                 }else{
-                    if(this.loadedS < this.spriteKeys.length){
+                    if (this.loadedS < this.spriteKeys.length){
                         let a = this.spriteKeys[this.loadedS];
-                        if(typeof sprites[a][0] === "string"){
+                        if (typeof sprites[a][0] === "string"){
                             background(0, 0);
                             let pixelW = 400/sprites[a][0].length,
                                 pixelH = 400/sprites[a].length;
@@ -4170,7 +4167,7 @@ const pages = new Pages({
                             }
                             sprites[a][this.innerLoad] = get(0, 0, 400, 400);
                             img = sprites[a][this.innerLoad];
-                            if(this.innerLoad === sprites[a].length-1){
+                            if (this.innerLoad === sprites[a].length-1){
                                 this.innerLoad = 0;
                                 this.loadedS++;
                             }else{
@@ -4262,7 +4259,7 @@ const pages = new Pages({
                 popMatrix();
             
                 // Dust
-                if(frameCount % 5 === 0){
+                if (frameCount % 5 === 0){
                     this.dust.add(new Particle({
                         x: width+tx(10)+cam.x,
                         y: random(0, height)+cam.y,
@@ -4371,7 +4368,7 @@ const pages = new Pages({
                 }).display();
                 image(art.homeBg, 0, 0, width, height);
                 for (k in keys) {
-                    if(keys[k]) {
+                    if (keys[k]) {
                         pages.showPage("home");
                     }
                 }
