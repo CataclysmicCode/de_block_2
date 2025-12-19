@@ -766,11 +766,11 @@ window.cam = cam;
 
 // Screen size adjustments
 function tx(x) {
-    // Coded on 600 width, but it works on anything
+    // Made with 600px width, but it works with any width
     return (x / 600) * width;
 }
 function ty(y) {
-    // Coded on 600 height, but it works on anything
+    // Made with 600px height, but it works with any height
     return (y / 600) * height;
 }
 function T(t) {
@@ -2691,9 +2691,14 @@ class Block {
         fill(0);
         textAlign(CENTER, CENTER);
         text(
+            this.strength,
+            this.x + this.w / 2,
+            this.y + this.h / 3
+        );
+        text(
             this.colorName,
             this.x + this.w / 2,
-            this.y + this.h / 2
+            this.y + this.h / 1.5
         );
 
         if (
@@ -2847,8 +2852,8 @@ class Block {
         // Sadly, no
         if (!this.canChangeColor) return;
 
-        fill(255, 0, 0, 100);
-        rect(this.x, this.y, this.w, this.h);
+        // fill(255, 0, 0, 50);
+        // rect(this.x, this.y, this.w, this.h);
 
         // Colorize!
         if (strength > 0) {
@@ -3048,7 +3053,7 @@ class Block {
     spreadDecay(touching, colorName) {
         // Spread the death
         touching.forEach((v) => {
-            if (this.strength < 0)
+            if (this.strength < 0 && blocks[v[0]][v[1]].strength > this.strength)
                 blocks[v[0]][v[1]].setColor(
                     this.strength + 1,
                     colorName
@@ -3058,7 +3063,7 @@ class Block {
     spreadColor(touching, colorName) {
         // Spread the joy
         touching.forEach((v) => {
-            if (this.strength > 1)
+            if (this.strength > 1 && (blocks[v[0]][v[1]].strength <= this.strength || blocks[v[0]][v[1]].color !== this.color))
                 blocks[v[0]][v[1]].setColor(
                     this.strength - 1,
                     colorName
