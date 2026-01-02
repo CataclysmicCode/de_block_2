@@ -2687,6 +2687,7 @@ class Block {
             this.display(art[name], this.x, this.y, this.w, this.h);
         }
 
+        /*
         textSize(10);
         fill(0);
         textAlign(CENTER, CENTER);
@@ -2699,7 +2700,7 @@ class Block {
             this.colorName,
             this.x + this.w / 2,
             this.y + this.h / 1.5
-        );
+        );*/
 
         if (
             !this.canAnimate &&
@@ -3056,7 +3057,7 @@ class Block {
             if (this.strength < 0 && blocks[v[0]][v[1]].strength > this.strength)
                 blocks[v[0]][v[1]].setColor(
                     this.strength + 1,
-                    colorName
+                    colorName,
                 );
         });
     }
@@ -3066,7 +3067,7 @@ class Block {
             if (this.strength > 1 && (blocks[v[0]][v[1]].strength <= this.strength || blocks[v[0]][v[1]].color !== this.color))
                 blocks[v[0]][v[1]].setColor(
                     this.strength - 1,
-                    colorName
+                    colorName,
                 );
         });
     }
