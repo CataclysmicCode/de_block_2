@@ -5354,12 +5354,12 @@ const pages = new Pages({
                 }).display();
                 if (loadedAudio === totalAudio) {
                     console.log("---Audio loaded---");
-                    pages.showPage("game");
+                    /*pages.showPage("game");
                     songs[
                         "dark" + (floor(random(0, 4)) + 1)
-                    ].play();
+                    ].play();*/
                     // songs["happy"+(floor(random(0, 2))+1)].play();
-                    // cataclysmicIntro.init();
+                    cataclysmicIntro.init();
                 }
             },
         }),
@@ -5368,7 +5368,9 @@ const pages = new Pages({
                 cataclysmicIntro.update();
                 if (cataclysmicIntro.done) {
                     pages.showPage("game");
-                    songs["dark" + round(random(1, 4))].play();
+                    songs[
+                        "dark" + (floor(random(0, 4)) + 1)
+                    ].play();
                 }
             },
         }),
