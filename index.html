@@ -744,17 +744,17 @@ let cam = {
     speed: 20,
     moveTo: function (obj) {
         this.x +=
-            (obj.x +
+            ((obj.x +
                 obj.w / 2 -
                 this.x -
                 width / (2 * this.scale)) /
-            this.speed;
+            this.speed);
         this.y +=
-            (obj.y +
+            ((obj.y +
                 obj.h / 2 -
                 this.y -
                 height / (2 * this.scale)) /
-            this.speed;
+            this.speed);
     },
 };
 window.cam = cam;
@@ -4203,7 +4203,7 @@ class CataclysmicIntro {
     }
 
     logic() {
-        this.time++;
+        this.time += 1;
 
         // Look around
         this.cam.animateLook(this.time, 0, 100, 300, 300, 200);
@@ -5161,9 +5161,9 @@ const pages = new Pages({
             dust: new ParticleSystem(),
             particles: new ParticleSystem(),
             draw: function () {
-                let bigPapa = backgrounds.Forest[2];
-                for (let i = 0; i < bigPapa.length; i++) {
-                    let img = bigPapa[i],
+                let parent = backgrounds.Forest[2];
+                for (let i = 0; i < parent.length; i++) {
+                    let img = parent[i],
                         h = 600,
                         w = (img.width / img.height) * 600;
                     ctx.drawImage(
@@ -5354,12 +5354,12 @@ const pages = new Pages({
                 }).display();
                 if (loadedAudio === totalAudio) {
                     console.log("---Audio loaded---");
-                    /*pages.showPage("game");
+                    pages.showPage("game");
                     songs[
                         "dark" + (floor(random(0, 4)) + 1)
-                    ].play();*/
+                    ].play();
                     // songs["happy"+(floor(random(0, 2))+1)].play();
-                    cataclysmicIntro.init();
+                    //cataclysmicIntro.init();
                 }
             },
         }),
@@ -5408,15 +5408,34 @@ createLevel();
 
 /** Draw loop **/
 // [
+let lastTime = 0;
+let dt = 1;
 
-frameRate(60);
-let that = undefined;
-function draw() {
-    that = this;
-    frameCount++;
+const loop = (currentTime) => {
+
+    // Schedule next frame immediately
+    window.requestAnimationFrame(loop);
+
+    if (!lastTime) {
+        lastTime = currentTime;
+        return;
+    }
+
+    const elapsed = currentTime - lastTime;
+    lastTime = currentTime;
+
+    // Calculate dt based on a 60fps (16.67ms) baseline
+    // If the monitor is 60Hz, dt will be ~1.0
+    dt = elapsed / (1000 / 60);
+
     pages.update();
     mouse.update();
+
 }
+
+
+// Start the loop
+window.requestAnimationFrame(loop);
 
 // ]
 
