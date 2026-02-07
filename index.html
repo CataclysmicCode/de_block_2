@@ -637,12 +637,10 @@
         for (let b in backgrounds) {
             let back = backgrounds[b];
             for (let i = 0; i < back.length; i++) {
-                for (let j = 0; j < back[i]; j++) {
-                    let dScript = document.createElement("script");
-                    dScript.src =
-                        "Images/" + b + "/" + (i + 1) + "/" + (j + 1) + ".js";
-                    document.body.appendChild(dScript);
-                }
+                let dScript = document.createElement("script");
+                dScript.src =
+                    "Images/" + b + "/" + (i + 1) + ".js";
+                document.body.appendChild(dScript);
             }
         }
 
@@ -5161,7 +5159,7 @@ const pages = new Pages({
             dust: new ParticleSystem(),
             particles: new ParticleSystem(),
             draw: function () {
-                let parent = backgrounds.Forest[2];
+                let parent = backgrounds.Industrial[0];
                 for (let i = 0; i < parent.length; i++) {
                     let img = parent[i],
                         h = 600,
