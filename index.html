@@ -809,6 +809,44 @@ function randomColor() {
     return color(random(0, 255), random(0, 255), random(0, 255));
 }
 
+// Bob Lyon's functions
+function rotatePoint(x, y, theta, sine) {
+    var cosine = theta;
+    if (sine === undefined) {
+        cosine = cos(theta);
+        sine = sin(theta);
+    }
+    return {
+        x:  cosine * x + sine * y,
+        y: -sine * x + cosine * y
+    };
+}
+function isInEllipse(x, y, ex, ey, w, h, theta, sine) {
+    x -= ex;
+    y -= ey;
+    if (theta | sine) {
+        var rp = rotatePoint(x, y, theta, sine);
+        x = rp.x;
+        y = rp.y;
+    }
+    var termX = 2 * x / w;  /* sqrt of first term */
+    var termY = 2 * y / h;  /* sqrt of second term */
+    return ((termX * termX) + (termY * termY)) <= 1;
+}
+function isBetween(c, a, b) {
+    return (a - c) * (b - c) <= 0;
+}
+function isInRect(x, y, rx, ry, w, h, theta) {
+    if (theta) {
+        var p = rotatePoint(x - rx, y - ry, theta);
+        x = p.x + rx;
+        y = p.y + ry;
+    }
+    rx -= w/2;
+    ry -= h/2;
+    return isBetween(x, rx, rx + w) && isBetween(y, ry, ry + h);
+}
+
 // ]
 
 /** Mouse **/
@@ -851,6 +889,220 @@ const mouse = {
         this.pressed = true;
     },
 };
+
+// ]
+
+/** Buttons **/
+// [
+
+class Button {
+    constructor(params = {}) {
+        // Position & shape
+        this.x = params.x || 0;
+        this.y = params.y || 0;
+        this.w = params.w || 50;
+        this.h = params.h || 50;
+        this.shape = params.shape || "rect"; // rect, ellipse or quad
+        
+        // Image
+        this.image = params.image;
+        
+        // Rotation
+        this.r = params.r || 0;
+        this.hoverR = params.hoverR;
+        this.clickR = params.clickR;
+        
+        // Color
+        this.color = params.color || color(0);
+        this.hoverColor = params.hoverColor;
+        this.clickColor = params.clickColor;
+        
+        // Border
+        this.stroke = params.stroke || color(0);
+        this.hoverStroke = params.hoverStroke;
+        this.clickStroke = params.clickStroke;
+        this.strokeWeight = params.strokeWeight || 0;
+        this.borderRadius = params.borderRadius || 0;
+        
+        // Text
+        textSize(12);
+        this.text = params.text || "";
+        this.textColor = params.textColor || color(0);
+        this.hoverTextColor = params.hoverTextColor;
+        this.clickTextColor = params.clickTextColor;
+        
+        // Calculate initial textSize
+        const baseWidth = textWidth(this.text) || 1; // Prevent division by zero
+        this.textSize = params.textSize || (
+            (this.shape === "rect") ? 
+            (min(this.h, this.w / baseWidth * 9)) : 
+            (min(this.h * 0.8, this.w / baseWidth * 9))
+        );
+       
+        // Events
+        this.onClick = params.onClick || params.click || function(){};
+        this.mouseOver = params.mouseOver || params.over || function(){};
+        this.mouseOut = params.mouseOut || params.out || function(){};
+        
+        // Booleans
+        this.mouseIsOver = false;
+        this.mouseIsClicked = false;
+        
+        // Transitions
+        this.transitionSpeed = params.transitionSpeed || 1;
+        this.transition = params.transition || {};
+        this.tc = 0;
+        
+        // Store original state for transitions
+        this.original = {
+            x: this.x,
+            y: this.y,
+            w: this.w,
+            h: this.h,
+            r: this.r,
+            color: this.color,
+            stroke: this.stroke,
+            strokeWeight: this.strokeWeight,
+            textColor: this.textColor,
+            textSize: this.textSize,
+            borderRadius: this.borderRadius
+        };
+    }
+
+    mouseIsOut() {
+        this.mouseIsOver = false;
+        this.mouseOut();
+    }
+
+    mouseIsIn() {
+        this.mouseIsOver = true;
+        this.mouseOver();
+    }
+
+    display() {
+        pushMatrix();
+        translate(this.x, this.y);
+        
+        // Handle Rotation State
+        if (this.mouseIsClicked) {
+            rotate(this.clickR || this.r);
+        } else if (this.mouseIsOver) {
+            rotate(this.hoverR || this.r);
+        } else {
+            rotate(this.r);
+        }
+        
+        textAlign(CENTER, CENTER);
+        textSize(this.textSize);
+        
+        // Render Image
+        if (this.image) {
+            imageMode(CENTER);
+            image(this.image, 0, 0, this.w, this.h);
+        }
+        
+        // Style Logic
+        if (this.mouseIsClicked) {
+            fill(this.clickColor || this.color);
+            stroke(this.clickStroke || this.stroke);
+        } else if (this.mouseIsOver) {
+            fill(this.hoverColor || this.color);
+            stroke(this.hoverStroke || this.stroke);
+        } else {
+            fill(this.color);
+            stroke(this.stroke);
+        }
+        
+        if (this.strokeWeight) {
+            strokeWeight(this.strokeWeight);
+        } else {
+            noStroke();
+        }
+        
+        // Shape Logic
+        if (this.shape === "rect") {
+            rectMode(CENTER);
+            rect(0, 0, this.w, this.h, this.borderRadius);
+        } else if (this.shape === "ellipse") {
+            ellipse(0, 0, this.w, this.h);
+        }
+        
+        // Text Color Logic
+        if (this.mouseIsClicked) {
+            fill(this.clickTextColor || this.textColor);
+        } else if (this.mouseIsOver) {
+            fill(this.hoverTextColor || this.textColor);
+        } else {
+            fill(this.textColor);
+        }
+        
+        text(this.text, 0, 0);
+        popMatrix();
+    }
+
+    logic() {
+        // Collision Detection
+        let collision = false;
+        if (this.shape === "ellipse") {
+            collision = isInEllipse(mouseX, mouseY, this.x, this.y, this.w, this.h, this.r);
+        } else if (this.shape === "rect") {
+            collision = isInRect(mouseX, mouseY, this.x, this.y, this.w, this.h, this.r);
+        }
+
+        // Hover Logic
+        if (collision) {
+            if (!this.mouseIsOver) this.mouseIsIn();
+            cursor("pointer");
+        } else {
+            if (this.mouseIsOver) this.mouseIsOut();
+        }
+        
+        // Click Logic (New Mouse System)
+        // If mouse is released while over the button, trigger onClick
+        if (this.mouseIsOver && mouse.released) {
+            this.onClick();
+            mouse.use(); // Mark as used so other things don't click at the same time
+        }
+
+        // Active "Pressed" State
+        // The button looks 'clicked' if the mouse is currently held down on it
+        this.mouseIsClicked = (this.mouseIsOver && mouse.pressed);
+    }
+
+    // Mapping helper for numbers
+    mp(param) {
+        let target = (typeof this.transition[param] !== "undefined") ? this.transition[param] : this.original[param];
+        this[param] = map(this.tc, 0, 100, this.original[param], target);
+    }
+
+    // Mapping helper for colors
+    mpc(param) {
+        let target = (typeof this.transition[param] !== "undefined") ? this.transition[param] : this.original[param];
+        this[param] = lerpColor(this.original[param], target, map(this.tc, 0, 100, 0, 1));
+    }
+
+    trans() {
+        // Increment/Decrement transition counter
+        if (this.mouseIsOver) {
+            this.tc = min(this.tc + (this.transitionSpeed * 2), 100);
+        } else {
+            this.tc = max(this.tc - this.transitionSpeed, 0);
+        }
+        
+        // Update all transitionable properties
+        const props = ["x", "y", "w", "h", "r", "textSize", "strokeWeight", "borderRadius"];
+        const colorProps = ["color", "stroke", "textColor"];
+        
+        props.forEach(p => this.mp(p));
+        colorProps.forEach(cp => this.mpc(cp));
+    }
+
+    update() {
+        this.logic();
+        this.trans();
+        this.display();
+    }
+}
 
 // ]
 
@@ -4963,6 +5215,63 @@ function createLevel() {
     player.reset();
 }
 
+const buttons = {
+    settings: new Button({
+        x: width/2,
+        y: 400,
+        w: width,
+        h: 100,
+        d: 25,
+
+        strokeWeight: 0,
+        
+        color: color(50),
+        clickColor: color(146, 211, 232),
+        
+        text: "Settings",
+        textSize: 30,
+        textColor: color(190, 50, 50),
+        
+        onClick: function(){
+            println("Click!");
+        },
+        
+        transition: {
+            w: width - 20,
+            h: 100 - 20,
+            textColor: color(0, 123, 255)
+        },
+        transitionSpeed: 5
+    }),
+    play: new Button({
+        x: width/2,
+        y: 300,
+        w: width,
+        h: 100,
+        d: 25,
+
+        strokeWeight: 0,
+        
+        color: color(50),
+        clickColor: color(255, 204, 0),
+        
+        text: "Play",
+        textSize: 30,
+        textColor: color(210, 184, 0),
+        
+        onClick: function(){
+            println("Click!");
+        },
+        
+        transition: {
+            w: width - 20,
+            h: 100 - 20,
+            textColor: color(153, 0, 153)
+        },
+        transitionSpeed: 5
+    })
+};
+
 const pages = new Pages({
     pages: {
         loadImages: new Page({
@@ -5293,6 +5602,7 @@ const pages = new Pages({
                 pushStyle();
                 fill(0, 5);
                 noStroke();
+                rectMode(CORNER);
                 rect(0, 0, width, height);
                 popStyle();
 
@@ -5328,6 +5638,9 @@ const pages = new Pages({
                     mouse.use();
                 }
 
+                buttons.settings.update();
+                buttons.play.update();
+
                 // Alt + shift + 1 for thumbnail
                 if (keys[49] && keys[16] && keys[18]) {
                     pages.showPage("thumbnail");
@@ -5352,12 +5665,16 @@ const pages = new Pages({
                 }).display();
                 if (loadedAudio === totalAudio) {
                     console.log("---Audio loaded---");
-                    pages.showPage("game");
-                    songs[
-                        "dark" + (floor(random(0, 4)) + 1)
-                    ].play();
+                    // pages.showPage("game");
+                    /*
+                        songs[
+                            "dark" + (floor(random(0, 4)) + 1)
+                        ].play();
+                    */
                     // songs["happy"+(floor(random(0, 2))+1)].play();
-                    //cataclysmicIntro.init();
+                    pages.showPage("home");
+                    sounds["talking1"].play();
+                    // cataclysmicIntro.init();
                 }
             },
         }),
@@ -5430,7 +5747,6 @@ const loop = (currentTime) => {
     mouse.update();
 
 }
-
 
 // Start the loop
 window.requestAnimationFrame(loop);
