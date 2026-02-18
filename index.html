@@ -5216,38 +5216,11 @@ function createLevel() {
 }
 
 const buttons = {
-    settings: new Button({
-        x: width/2,
-        y: 400,
-        w: width,
-        h: 100,
-        d: 25,
-
-        strokeWeight: 0,
-        
-        color: color(50),
-        clickColor: color(146, 211, 232),
-        
-        text: "Settings",
-        textSize: 30,
-        textColor: color(190, 50, 50),
-        
-        onClick: function(){
-            println("Click!");
-        },
-        
-        transition: {
-            w: width - 20,
-            h: 100 - 20,
-            textColor: color(0, 123, 255)
-        },
-        transitionSpeed: 5
-    }),
     play: new Button({
-        x: width/2,
-        y: 300,
-        w: width,
-        h: 100,
+        x: width / 2,
+        y: 225,
+        w: width / 3,
+        h: 50,
         d: 25,
 
         strokeWeight: 0,
@@ -5264,11 +5237,62 @@ const buttons = {
         },
         
         transition: {
-            w: width - 20,
-            h: 100 - 20,
-            textColor: color(153, 0, 153)
+            w: 280,
+            textColor: color(153, 51, 153)
         },
-        transitionSpeed: 5
+        transitionSpeed: 4
+    }),
+    credits: new Button({
+        x: width / 2,
+        y: 300,
+        w: width / 3,
+        h: 50,
+        d: 25,
+
+        strokeWeight: 0,
+        
+        color: color(50),
+        clickColor: color(255, 204, 0),
+        
+        text: "Credits",
+        textSize: 30,
+        textColor: color(0, 123, 255),
+        
+        onClick: function(){
+            println("Click!");
+        },
+        
+        transition: {
+            h: 80,
+            textColor: color(255, 153, 51)
+        },
+        transitionSpeed: 4
+    }),
+    settings: new Button({
+        x: width / 2,
+        y: 375,
+        w: width / 3,
+        h: 50,
+        d: 25,
+
+        strokeWeight: 0,
+        
+        color: color(50),
+        clickColor: color(146, 211, 232),
+        
+        text: "Settings",
+        textSize: 30,
+        textColor: color(190, 50, 50),
+        
+        onClick: function(){
+            println("Click!");
+        },
+        
+        transition: {
+            r: 10,
+            textColor: color(50, 220, 50)
+        },
+        transitionSpeed: 4
     })
 };
 
@@ -5638,8 +5662,15 @@ const pages = new Pages({
                     mouse.use();
                 }
 
-                buttons.settings.update();
+                rectMode(CENTER);
+                fill(30, 100);
+                stroke(200);
+                strokeWeight(3);
+                rect(300, 300, 300, 300, 20);
+
                 buttons.play.update();
+                buttons.settings.update();
+                buttons.credits.update();
 
                 // Alt + shift + 1 for thumbnail
                 if (keys[49] && keys[16] && keys[18]) {
@@ -5673,7 +5704,7 @@ const pages = new Pages({
                     */
                     // songs["happy"+(floor(random(0, 2))+1)].play();
                     pages.showPage("home");
-                    sounds["talking1"].play();
+                    // sounds["talking1"].play();
                     // cataclysmicIntro.init();
                 }
             },
