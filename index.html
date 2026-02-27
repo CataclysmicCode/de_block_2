@@ -720,15 +720,18 @@ let entities = [],
     keys = {},
     levelW = 0,
     levelH = 0,
-    ctx = canvas.getContext("2d");
+    ctx = canvas.getContext("2d"),
+    LAST_SAFE_X = 0,
+    LAST_SAFE_Y = 0;
 
 // Constants
 const blockW = 40,
     blockH = 40,
     GRAVITY = Math.PI / 10,
-    PADDING_Y = height * 2, // Padding around the y axis of a level
-    PADDING_X = width * 2, // Padding around the x axis of a level
+    PADDING_Y = blockH * 0, // Padding around the y axis of a level
+    PADDING_X = blockW * 0, // Padding around the x axis of a level
     MAX_DIST = 20; // Maximum distance for the player's pathfinder to check
+
 
 // ]
 
@@ -753,6 +756,8 @@ let cam = {
                 this.y -
                 height / (2 * this.scale)) /
             this.speed);
+        this.x = constrain(this.x, 0, levelW  - width);
+        this.y = constrain(this.y, 0, levelH - height);
     },
 };
 window.cam = cam;
@@ -927,6 +932,13 @@ class Button {
         // Text
         textSize(12);
         this.text = params.text || "";
+        this.text = new PixelText({
+            string: this.text,
+            color: 1,
+            size: 26,
+            align: CENTER
+        });
+        this.pixelText = params.pixelText || false;
         this.textColor = params.textColor || color(0);
         this.hoverTextColor = params.hoverTextColor;
         this.clickTextColor = params.clickTextColor;
@@ -1036,7 +1048,12 @@ class Button {
             fill(this.textColor);
         }
         
-        text(this.text, 0, 0);
+        if (this.pixelText) {
+            translate(0, 3.5); // Add a small margin cuz the centering isn't perfect
+            this.text.display();
+        } else {
+            text(this.text.string, 0, 0);
+        }
         popMatrix();
     }
 
@@ -3095,6 +3112,8 @@ class Block {
             this[i] = blockData[type][i];
         }
 
+        this.symbol = type;
+        
         if (this.onChange) {
             this.onChange(this);
         }
@@ -3384,6 +3403,10 @@ class Block {
 class Player {
     constructor(params) {
         // Physics
+        this.x = 0;
+        this.y = 0;
+        this.w = blockW * 0.8;
+        this.h = blockH * 0.8;
         this.vx = 0;
         this.vy = 0;
         this.canJump = false;
@@ -3414,9 +3437,6 @@ class Player {
         for (let i in params) {
             this[i] = params[i];
         }
-
-        this.startX = this.x;
-        this.startY = this.y;
     }
 
     updateHud() {
@@ -3647,16 +3667,6 @@ class Player {
                 }
             }
         }
-    }
-    reset() {
-        this.x = this.startX;
-        this.y = this.startY;
-        this.vx = 0;
-        this.vy = 0;
-        this.nearDark = {};
-        this.pathfinder = this.blankPathfinder.map((innerArray) => [
-            ...innerArray,
-        ]);
     }
 
     /**
@@ -4966,65 +4976,8 @@ let blockData = {
     },
 };
 let levels = [
-        [
-            "G#######@#########-------------------------------------------------------------------------------",
-            "G#######G#########-------------------------------------------------------------------------------",
-            "G#################-------------------------------------------------------------------------------",
-            "G>################-------------------------------------------------------------------------------",
-            "G#################-------------------------------------------------------------------------------",
-            "G#################-------------------------------------------------------------------------------",
-            "G#################@------------------------------------------------------------------------------",
-            "GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG",
-        ],
-        [
-            "------------------------LMM----------------------------",
-            "---------------------FFMGGGFFFMM-----------------------",
-            "-@---------------MFLTGGGGGGGGGGGFF---------------------",
-            "E-R-MMMM-QQFMLTMTGGGGGGGGGGGGGGGGGFMTFMQTM--QEQEQ--F--M",
-            "GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG--GGGGG44G00G",
-            "GGGGGGGGGGGGGGGGGG---FFFFFFFFFMMMMMMMMMM----GGGGG44G00G",
-            "GGGGGGGGGGGGGG-QEQEQEGGGGGGGGGGGGGGGGGGGGGGGGGGGG44G00G",
-            "SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS",
-            "OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO--OOOOOOOO",
-            "-------------------------------------------------------",
-            "-------------------------------------------------------",
-            "-------------------------------------------------------",
-        ],
-        [
-            "------------------------lmm----------------------------",
-            "---------------------ffmgggfffmm-----------------------",
-            "--@--------------mfltgggggggggggff---------------------",
-            "e-r-mmmm-qqfmltmtgggggggggggggggggfmtfmqtm--qeqeq--f--m",
-            "gggggggggggggggggggggggggggggggggggggggggg--ggggg44g00g",
-            "gggggggggggggggggg---fffffffffmmmmmmmmmm----ggggg44g00g",
-            "gggggggggggggg-qeqeqegggggggggggggggggggggggggggg44g00g",
-            "sssssssssssssssssssssssssssssssssssssssssssssssssssssss",
-            "ooooooooooooooooooooooooooooooooooooooooooooo--oooooooo",
-            "-------------------------------------------------------",
-            "-------------------------------------------------------",
-            "-------------------------------------------------------",
-        ],
-        [
-            "-----####################----------",
-            "----G####################----------",
-            "----G####################----------",
-            "@---G####################----------",
-            "G333GGGGGGGGGGGGGGGGGGGGMR----GGGGG",
-            "G333GGGGGGGGGGGGGGGGGGGGGGGF---GGG-",
-            "GG33GGGGGGGGGGGGGGGGGGGGGGGG--MGGEE",
-            "GGG3SSSSSSSGGGGGGGGGGGGGGG----GGGGG",
-            "SSS3SSSSSSSSSSSGGGGGGGGG---LQGGSGGG",
-            "SS----SSSSSSSSSSSSSSGGG--QMGGGSSSGE",
-            "SSTT---SSSSSSSSSS--------GGSSSSSSGG",
-            "SSGG-------SSSSS-----------SSSSSGG-",
-            "SSSG--SS---Y--L---V-L----Y--SSSSGEE",
-            "SSSS--SSSSSSSSSSSSSSSSSSSSS-----SGG",
-            "OOOOT-SSSSSSSSSSSSSSSSSSSSSSS-L--OO",
-            "OOOOG--OOO5555SSSSSSSSSOOOOOOOOO-E-",
-            "OOOOGTTM55555OOOOOOOOOOOOOOOOOOOGGG",
-            "-OOOOGGGOOOOOOOOOOOOOOOOOOOOOOOGGGG",
-        ],
-        [
+    {
+        data: [
             "------------------------------------------------------------------------------------------------",
             "------------------------------------------------------------------------------------------------",
             "------------------------------------------------------------------------------------------------",
@@ -5050,8 +5003,74 @@ let levels = [
             "-------OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO-----------------OOOOOOOOOOOOOOOOOOOOOOOOOOOOOO",
             "----------OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO---------------------OOOOOOOOOOOOOOOOOOOOOOOOOOOO",
         ],
-    ],
-    level = 4;
+    },
+    {
+        data: [
+            "G#######@#########-------------------------------------------------------------------------------",
+            "G#######G#########-------------------------------------------------------------------------------",
+            "G#################-------------------------------------------------------------------------------",
+            "G>################-------------------------------------------------------------------------------",
+            "G#################-------------------------------------------------------------------------------",
+            "G#################-------------------------------------------------------------------------------",
+            "G#################@------------------------------------------------------------------------------",
+            "GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG",
+        ],
+    },
+    {
+        data: [
+            "------------------------LMM----------------------------",
+            "---------------------FFMGGGFFFMM-----------------------",
+            "-@---------------MFLTGGGGGGGGGGGFF---------------------",
+            "E-R-MMMM-QQFMLTMTGGGGGGGGGGGGGGGGGFMTFMQTM--QEQEQ--F--M",
+            "GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG--GGGGG44G00G",
+            "GGGGGGGGGGGGGGGGGG---FFFFFFFFFMMMMMMMMMM----GGGGG44G00G",
+            "GGGGGGGGGGGGGG-QEQEQEGGGGGGGGGGGGGGGGGGGGGGGGGGGG44G00G",
+            "SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS",
+            "OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO--OOOOOOOO",
+            "-------------------------------------------------------",
+            "-------------------------------------------------------",
+            "-------------------------------------------------------",
+        ],
+    },
+    {
+        data: [
+            "------------------------lmm----------------------------",
+            "---------------------ffmgggfffmm-----------------------",
+            "--@--------------mfltgggggggggggff---------------------",
+            "e-r-mmmm-qqfmltmtgggggggggggggggggfmtfmqtm--qeqeq--f--m",
+            "gggggggggggggggggggggggggggggggggggggggggg--ggggg44g00g",
+            "gggggggggggggggggg---fffffffffmmmmmmmmmm----ggggg44g00g",
+            "gggggggggggggg-qeqeqegggggggggggggggggggggggggggg44g00g",
+            "sssssssssssssssssssssssssssssssssssssssssssssssssssssss",
+            "ooooooooooooooooooooooooooooooooooooooooooooo--oooooooo",
+            "-------------------------------------------------------",
+            "-------------------------------------------------------",
+            "-------------------------------------------------------",
+        ],
+    },
+    {
+        data: [
+            "-----####################----------",
+            "----G####################----------",
+            "----G####################----------",
+            "@---G####################----------",
+            "G333GGGGGGGGGGGGGGGGGGGGMR----GGGGG",
+            "G333GGGGGGGGGGGGGGGGGGGGGGGF---GGG-",
+            "GG33GGGGGGGGGGGGGGGGGGGGGGGG--MGGEE",
+            "GGG3SSSSSSSGGGGGGGGGGGGGGG----GGGGG",
+            "SSS3SSSSSSSSSSSGGGGGGGGG---LQGGSGGG",
+            "SS----SSSSSSSSSSSSSSGGG--QMGGGSSSGE",
+            "SSTT---SSSSSSSSSS--------GGSSSSSSGG",
+            "SSGG-------SSSSS-----------SSSSSGG-",
+            "SSSG--SS---Y--L---V-L----Y--SSSSGEE",
+            "SSSS--SSSSSSSSSSSSSSSSSSSSS-----SGG",
+            "OOOOT-SSSSSSSSSSSSSSSSSSSSSSS-L--OO",
+            "OOOOG--OOO5555SSSSSSSSSOOOOOOOOO-E-",
+            "OOOOGTTM55555OOOOOOOOOOOOOOOOOOOGGG",
+            "-OOOOGGGOOOOOOOOOOOOOOOOOOOOOOOGGGG",
+        ],
+    }
+], level = 0;
 
 let blocks = [];
 blocks.handle = function (func) {
@@ -5059,7 +5078,7 @@ blocks.handle = function (func) {
         let y = max(floor((cam.y + PADDING_Y) / blockH) - 2, 0);
         y <
         min(
-            floor((cam.y + PADDING_Y + height) / blockH) + 2,
+            floor((cam.y + PADDING_Y + height * (1 / cam.scale)) / blockH) + 2,
             this.length
         );
         y++
@@ -5068,7 +5087,7 @@ blocks.handle = function (func) {
             let x = max(floor((cam.x + PADDING_X) / blockW) - 2, 0);
             x <
             min(
-                floor((cam.x + PADDING_X + width) / blockW) + 2,
+                floor((cam.x + PADDING_X + width * (1 / cam.scale)) / blockW) + 2,
                 this[y].length
             );
             x++
@@ -5078,28 +5097,38 @@ blocks.handle = function (func) {
     }
 };
 
+function saveProgress() {
+    for (let y = 0; y < blocks.length; y++) {
+        let row = "";
+        for (let x = 0; x < blocks[y].length; x++) {
+            row += blocks[y][x].symbol;
+        }
+        levels[level].data[y] = row;
+    }
+}
 function createLevel() {
     // Reset
     enemies.length = 0;
     entities.length = 0;
     blocks.length = 0;
 
-    // Loop y axis
-    for (let y = 0; y < levels[level].length; y++) {
+    player = new Player({});
+
+    // Loop y axise
+    for (let y = 0; y < levels[level].data.length; y++) {
         blocks.push([]);
 
         // Loop x axis
-        for (let x = 0; x < levels[level][y].length; x++) {
-            let type = levels[level][y][x];
+        for (let x = 0; x < levels[level].data[y].length; x++) {
+            let type = levels[level].data[y][x];
             switch (type) {
                 case "@":
-                    // Create new player
-                    player = new Player({
-                        w: blockW * 0.8,
-                        h: blockH * 0.8,
-                        x: x * blockW,
-                        y: y * blockH,
-                    });
+                    player.x = x * blockW;
+                    player.y = y * blockH;
+                    player.w = blockW * 0.8;
+                    player.h = blockH * 0.8;
+                    LAST_SAFE_X = player.x;
+                    LAST_SAFE_Y = player.y;
                     type = "-";
                     break;
                 case "#":
@@ -5209,10 +5238,11 @@ function createLevel() {
     levelW = blockW * blocks[0].length;
     levelH = blockH * blocks.length;
 
+    player.x = LAST_SAFE_X;
+    player.y = LAST_SAFE_Y;
     player.blankPathfinder = blocks.map((innerArray) =>
         innerArray.map(() => 0)
     );
-    player.reset();
 }
 
 const buttons = {
@@ -5226,14 +5256,15 @@ const buttons = {
         strokeWeight: 0,
         
         color: color(50),
-        clickColor: color(255, 204, 0),
+        clickColor: color(40),
         
         text: "Play",
         textSize: 30,
         textColor: color(210, 184, 0),
+        pixelText: true,
         
         onClick: function(){
-            println("Click!");
+            pages.showPage("game");
         },
         
         transition: {
@@ -5252,11 +5283,12 @@ const buttons = {
         strokeWeight: 0,
         
         color: color(50),
-        clickColor: color(255, 204, 0),
+        clickColor: color(40),
         
         text: "Credits",
         textSize: 30,
         textColor: color(0, 123, 255),
+        pixelText: true,
         
         onClick: function(){
             println("Click!");
@@ -5278,11 +5310,12 @@ const buttons = {
         strokeWeight: 0,
         
         color: color(50),
-        clickColor: color(146, 211, 232),
+        clickColor: color(40),
         
         text: "Settings",
         textSize: 30,
         textColor: color(190, 50, 50),
+        pixelText: true,
         
         onClick: function(){
             println("Click!");
@@ -5608,6 +5641,10 @@ const pages = new Pages({
                 }
 
                 player.updateHud();
+                
+                if (keys[10]) {
+                    saveProgress();
+                }
 
                 // Fix this, it is returning the error: TypeError: undefined is not an object (evaluating 'blcks[v0]][v[1]].strength')
                 if (player.dead) createLevel();
@@ -5662,11 +5699,20 @@ const pages = new Pages({
                     mouse.use();
                 }
 
+                new PixelText({
+                    x: width / 2,
+                    y: height * 0.15,
+                    string: "~~ De Block 2 ~~",
+                    size: 50,
+                    color: 1,
+                    align: CENTER,
+                }).display();
+
                 rectMode(CENTER);
-                fill(30, 100);
-                stroke(200);
+                fill(30, 150);
+                stroke(150);
                 strokeWeight(3);
-                rect(300, 300, 300, 300, 20);
+                rect(300, 300, 300, 300, 10);
 
                 buttons.play.update();
                 buttons.settings.update();
@@ -5704,6 +5750,7 @@ const pages = new Pages({
                     */
                     // songs["happy"+(floor(random(0, 2))+1)].play();
                     pages.showPage("home");
+                    image(art.homeBg, 0, 0, width, height);
                     // sounds["talking1"].play();
                     // cataclysmicIntro.init();
                 }
@@ -5726,16 +5773,14 @@ const pages = new Pages({
                 new PixelText({
                     x: width / 2,
                     y: height * 0.15,
-                    string: "~~ COLOR LAND ~~",
+                    string: "~~ De Block 2 ~~",
                     size: 50,
                     color: 1,
                     align: CENTER,
                 }).display();
                 image(art.homeBg, 0, 0, width, height);
-                for (k in keys) {
-                    if (keys[k]) {
-                        pages.showPage("home");
-                    }
+                if (keys[10] || keys[32]) {
+                    pages.showPage("home");
                 }
             },
         }),
