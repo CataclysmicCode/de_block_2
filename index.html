@@ -732,7 +732,6 @@ const blockW = 40,
     PADDING_X = blockW * 0, // Padding around the x axis of a level
     MAX_DIST = 20; // Maximum distance for the player's pathfinder to check
 
-
 // ]
 
 /** Camera **/
@@ -2251,7 +2250,6 @@ class Enemy {
         this.type = "basic";
         this.index = 0;
         this.attacking = false;
-
         this.inLiquid = false;
         this.isGrounded = false;
         this.isNear = false;
@@ -3708,6 +3706,16 @@ class Player {
                 this.movePath(v, a + 1, m);
             });
     }
+    reset() {
+        this.x = LAST_SAFE_X;
+        this.y = LAST_SAFE_Y;
+        this.vx = 0;
+        this.vy = 0;
+        this.nearDark = {};
+        this.pathfinder = this.blankPathfinder.map((innerArray) => [
+            ...innerArray,
+        ]);
+    }
 
     update() {
         this.move();
@@ -3995,7 +4003,6 @@ class ParticleSystem {
  *     @param {number} toX/toY - Move to coordinates.
  *     @param {number} toRx/toRy/toRz - Rotation to move to. X, y and x respectively.
  *     @param {number} toW/toH - Move to dimentions.
- *     @param {number} toX/toY - Move to coordinates.
  *     @param {boolean} fade - Fade to 0% opacity as death nears.
  *     @param {string} image - Either "rect", "ellipse" or and instance of image.
  *     @param {number} health - Represents how many frames the particle has left to live. (-1 if it never dies)
@@ -4977,6 +4984,11 @@ let blockData = {
 };
 let levels = [
     {
+        left: {
+            level: 1,
+            x: 0,
+            y: 0
+        },
         data: [
             "------------------------------------------------------------------------------------------------",
             "------------------------------------------------------------------------------------------------",
@@ -5012,7 +5024,7 @@ let levels = [
             "G>################-------------------------------------------------------------------------------",
             "G#################-------------------------------------------------------------------------------",
             "G#################-------------------------------------------------------------------------------",
-            "G#################@------------------------------------------------------------------------------",
+            "G#################-------------------------------------------------------------------------------",
             "GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG",
         ],
     },
@@ -5097,6 +5109,24 @@ blocks.handle = function (func) {
     }
 };
 
+function handleBounds(dir) {
+    if (dir === "up" && player.y + player.h < 0 && levels[level].up) {
+        saveProgress();
+        level = levels[level].up.level;
+    } else if (dir === "down" && player.y > levelH && levels[level].down) {
+        saveProgress();
+        level = levels[level].down.level;
+    } else if(dir === "left" && player.x + player.w < 0 && levels[level].left) {
+        saveProgress();
+        level = levels[level].left.level;
+    } else if(dir === "right" && player.x > levelW && levels[level].right) {
+        saveProgress();
+        level = levels[level].right.level;
+    } else {
+        return;
+    }
+    createLevel();
+}
 function saveProgress() {
     for (let y = 0; y < blocks.length; y++) {
         let row = "";
@@ -5642,16 +5672,18 @@ const pages = new Pages({
 
                 player.updateHud();
                 
-                if (keys[10]) {
-                    saveProgress();
-                }
+                handleBounds("up");
+                handleBounds("down");
+                handleBounds("left");
+                handleBounds("right");
 
-                // Fix this, it is returning the error: TypeError: undefined is not an object (evaluating 'blcks[v0]][v[1]].strength')
                 if (player.dead) createLevel();
+
             },
         }),
         home: new Page({
             walkers: [],
+            particles: new ParticleSystem(),
             addWalker: function () {
                 this.walkers.push(
                     new ExtremeWalker({
@@ -5717,6 +5749,7 @@ const pages = new Pages({
                 buttons.play.update();
                 buttons.settings.update();
                 buttons.credits.update();
+                this.particles.update();
 
                 // Alt + shift + 1 for thumbnail
                 if (keys[49] && keys[16] && keys[18]) {
