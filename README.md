@@ -10,7 +10,7 @@ To Do:
 - Missions & NPC's
 - Level conditional actions
 - Colorable blocks:
-    - Paint pread animation
+    - Paint spread animation
  
 - player:
     - sprinting, (double click a key to sprint, only available if you have positive color)
@@ -35,6 +35,5 @@ To Do:
  
 - ensure that birds and rottweilers are being removed
 - Built-in level creator with moving action
- 
- Note: shift+alt+1 to view thumbnail. Press any key to exit view
 
+Note: shift+alt+1 to view thumbnail. Press any key to exit view

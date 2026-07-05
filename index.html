@@ -245,7 +245,7 @@
             "cute1 cute2 cute3 cute4 cute5 happy1 happy2 splash1 splash2 underwater wilhelm dark1 dark2 dark3 dark4 egg1 egg2 bossfight cataclysmic_intro cave1 crumble1 crumble2 evil_talking garble landing hard_landing master_intro pitbull powerup talking1 dial_up".split(
                 " "
             );
-
+        
         let totalAudio = audioNames.length,
             loadedAudio = 0;
         for (let i = 0; i < totalAudio; i++) {
@@ -623,6 +623,7 @@
                 songs["gameplay"+(this.n ? this.n : "")].play();
             };
         }*/
+       
     </script>
 
     <!--Images-->
@@ -846,8 +847,8 @@ function isInRect(x, y, rx, ry, w, h, theta) {
         x = p.x + rx;
         y = p.y + ry;
     }
-    rx -= w/2;
-    ry -= h/2;
+    rx -= w / 2;
+    ry -= h / 2;
     return isBetween(x, rx, rx + w) && isBetween(y, ry, ry + h);
 }
 
@@ -4985,7 +4986,7 @@ let blockData = {
 let levels = [
     {
         left: {
-            level: 1,
+            level: 3,
             x: 0,
             y: 0
         },
@@ -5046,9 +5047,12 @@ let levels = [
     },
     {
         data: [
+            "-------------------------------------------------------",
+            "-------------------------------------------------------",
+            "-------------------------------------------------------",
             "------------------------lmm----------------------------",
             "---------------------ffmgggfffmm-----------------------",
-            "--@--------------mfltgggggggggggff---------------------",
+            "-----------------mfltgggggggggggff-------------------@-",
             "e-r-mmmm-qqfmltmtgggggggggggggggggfmtfmqtm--qeqeq--f--m",
             "gggggggggggggggggggggggggggggggggggggggggg--ggggg44g00g",
             "gggggggggggggggggg---fffffffffmmmmmmmmmm----ggggg44g00g",
@@ -5581,7 +5585,7 @@ const pages = new Pages({
                         h
                     );
                 }
-
+                
                 fill(
                     0,
                     150 -
